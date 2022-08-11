@@ -17,7 +17,7 @@ Install-module PwrDev -Scope CurrentUser
   ```
   git clone https://github.com/ocalvo/PwrDev.git "$env:HomeDrive$env:HomePath\Documents\WindowsPowerShell\Modules\PwrDev"
   ```
-2. In a VS command like shell execute:
+2. In a VS powershell execute:
 ```
 Import-Module PwrDev
 ```
