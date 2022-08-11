@@ -29,7 +29,7 @@ Export-ModuleMember -Function Get-BuildErrors
 
 function global:Open-Editor($fileName,$lineNumber)
 {
-  if ($null -ne $env:VSCODE_CWD)
+  if ("vscode" -eq $env:TERM_PROGRAM)
   {
     $codeParam = ($fileName+":"+$lineNumber)
     code --goto $codeParam
