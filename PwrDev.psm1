@@ -74,3 +74,5 @@ Export-ModuleMember -Alias goerror
 
 .$PSScriptRoot\MSBuild-Alias.ps1
 
+.$PSScriptRoot\BuildQueue.ps1
+
