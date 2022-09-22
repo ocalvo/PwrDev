@@ -92,9 +92,11 @@ Export-ModuleMember -Function Get-PullRequestBuildActions
 function global:Get-PullRequestBuildStatus
 {
     param(
-        [switch]$verbose,
+        #[switch]$verbose,
         [Parameter(Mandatory=$true)]$Build
     )
+
+    $verbose = $true
 
     $b = $Build | Select-Object -First 1;
     $bId = $b.context.buildId
@@ -116,14 +118,13 @@ function global:Monitor-PullRequestBuildActions
         [Parameter(Mandatory=$true)]$Build
     )
 
-    $v = $false
-    if ($VerbosePreference -eq "Continue") { $v = $true }
+    #$v = $false
+    #if ($VerbosePreference -eq "Continue") { $v = $true }
     do
     {
-        $BuildStatus = Get-PullRequestBuildStatus $Build -Verbose $v
+        $BuildStatus = Get-PullRequestBuildStatus $Build
         Sleep 1
-    }
-    while ($BuildStatus.status.Contains("completed"))
+    } while (!($BuildStatus.status.Contains("completed")))
 }
 
 Export-ModuleMember -Function Monitor-PullRequestBuildActions
@@ -147,13 +148,13 @@ function global:Start-PullRequestBuildActions
 
     [scriptblock] $monitorFunc = {
         Import-Module PwrDev
-        $v = $false
-        if ($args[1] -ne $null) { $v = $args[1] }
-        if ($v) { $VerbosePreference = "Continue" }
+        #$v = $false
+        #if ($args[1] -ne $null) { $v = $args[1] }
+        #if ($v) { $VerbosePreference = "Continue" }
         Monitor-PullRequestBuildActions -Build $args[0]
     }
-    $v = $verbose
-    return Start-Job -ScriptBlock $monitorFunc -ArgumentList ($build,$v)
+    #$v = $verbose
+    return Start-Job -ScriptBlock $monitorFunc -ArgumentList ($build)
 }
 
 Export-ModuleMember -Function Start-PullRequestBuildActions
