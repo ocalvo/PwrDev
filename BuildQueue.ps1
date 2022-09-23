@@ -112,6 +112,12 @@ function global:Get-PullRequestBuildStatus
 
 Export-ModuleMember -Function Get-PullRequestBuildStatus
 
+$statusSymbols = (
+    '❌', # Failed
+    '✅', # Pass
+    '⌛'  # Running
+)
+
 function global:Monitor-PullRequestBuildActions
 {
     param(
@@ -120,9 +126,29 @@ function global:Monitor-PullRequestBuildActions
 
     #$v = $false
     #if ($VerbosePreference -eq "Continue") { $v = $true }
+    $logCounter = 0
     do
     {
         $BuildStatus = Get-PullRequestBuildStatus $Build
+
+        $logs = Invoke-RestMethod $BuildStatus.logs.url -Headers (Get-VSOAuth)
+        $logsc = $logs.count
+        Write-Verbose "Found $logsc logs" -Verbose:$verbose
+        if ($logsc -gt $logCounter)
+        {
+            $logCounter..($logsc-1) |% {
+                $subLog = $logs.value[$_]
+                $logUrl = $subLog.url
+                Write-Verbose "Reading log $logUrl" -Verbose:$verbose
+                $content = Invoke-RestMethod $logUrl -Headers (Get-VSOAuth)
+                $content |% {
+                  Write-Host $content
+                }
+            }
+
+            $logCounter = $logs.count
+        }
+
         Sleep 1
     } while (!($BuildStatus.status.Contains("completed")))
 }
@@ -154,7 +180,9 @@ function global:Start-PullRequestBuildActions
         Monitor-PullRequestBuildActions -Build $args[0]
     }
     #$v = $verbose
-    return Start-Job -ScriptBlock $monitorFunc -ArgumentList ($build)
+    $job = Start-Job -ScriptBlock $monitorFunc -ArgumentList ($build)
+
+    return @{Build=$Build;Job=$job}
 }
 
 Export-ModuleMember -Function Start-PullRequestBuildActions
