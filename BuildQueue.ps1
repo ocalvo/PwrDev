@@ -66,7 +66,7 @@ function global:Get-PullRequestChecks
     $prID = $pullRequest.pullRequestId
     Write-Verbose "Getting policy checks for PR $prID" -Verbose:$verbose
 
-    $checks = az repos pr policy list --id ($prID) | ConvertFrom-Json | Where-Object { $null -ne $_.context.buildDefinitionId }
+    $checks = az repos pr policy list --id ($prID) | ConvertFrom-Json #| Where-Object { $null -ne $_.context.buildDefinitionId }
     return $checks
 }
 
@@ -118,29 +118,44 @@ $statusSymbols = (
     '⌛'  # Running
 )
 
+$_baseAK = $null
+$env:tokenPath = ((Split-path $profile)+("\..\Passwords\VSOToken.txt"))
+
+function global:Get-VSOAuthToken
+{
+    if ($null -eq $_baseAK)
+    {
+        $accessToken = (Get-Content $env:tokenPath)
+        $_baseAK = [Convert]::ToBase64String([System.Text.ASCIIEncoding]::ASCII.GetBytes(":$AccessToken"))
+    }
+    return @{
+        Authorization = "Basic $_baseAK"
+    }
+}
+
+Export-ModuleMember -Function Get-VSOAuthToken
+
 function global:Monitor-PullRequestBuildActions
 {
     param(
         [Parameter(Mandatory=$true)]$Build
     )
 
-    #$v = $false
-    #if ($VerbosePreference -eq "Continue") { $v = $true }
     $logCounter = 0
     do
     {
         $BuildStatus = Get-PullRequestBuildStatus $Build
 
-        $logs = Invoke-RestMethod $BuildStatus.logs.url -Headers (Get-VSOAuth)
+        $logs = Invoke-RestMethod $BuildStatus.logs.url -Headers (Get-VSOAuthToken)
         $logsc = $logs.count
-        Write-Verbose "Found $logsc logs" -Verbose:$verbose
+        Write-Verbose "Found $logsc logs"
         if ($logsc -gt $logCounter)
         {
             $logCounter..($logsc-1) |% {
                 $subLog = $logs.value[$_]
                 $logUrl = $subLog.url
-                Write-Verbose "Reading log $logUrl" -Verbose:$verbose
-                $content = Invoke-RestMethod $logUrl -Headers (Get-VSOAuth)
+                Write-Verbose "Reading log $logUrl" #-Verbose:$verbose
+                $content = Invoke-RestMethod $logUrl -Headers (Get-VSOAuthToken)
                 $content |% {
                   Write-Host $content
                 }
@@ -165,6 +180,11 @@ function global:Start-PullRequestBuildActions
     )
 
     $prId = $PullRequest.pullRequestId
+    if ($null -eq $Checks) {
+        Write-Error "No checks found for PR $prId"
+        return
+    }
+
     Write-Verbose "Queueing new build for PR $prId" -Verbose:$verbose
 
     $build = $Checks |% { az repos pr policy queue --evaluation-id $_.evaluationId --id $prId | ConvertFrom-Json }
