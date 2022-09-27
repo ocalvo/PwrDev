@@ -14,7 +14,7 @@ if ($null -eq (get-command git -ErrorAction Ignore))
 function global:Get-PullRequest()
 {
     param(
-        [switch]$Verbose
+        [switch]$Verbose=$false
     )
 
     $currentBranch = (git branch --show-current)
@@ -41,8 +41,8 @@ Export-ModuleMember -Function Get-PullRequest
 function global:Test-PullRequestUpToDate
 {
     param(
-        [switch]$Verbose,
-        [Parameter(Mandatory=$true)]$pullRequest = (Get-PullRequest -Verbose $verbose | Select-Object -First 1)
+        [switch]$Verbose=$false,
+        $pullRequest = (Get-PullRequest -Verbose:$verbose | Select-Object -First 1)
     )
 
     $lastCommitId = $pullRequest.lastMergeSourceCommit.commitId
@@ -59,7 +59,7 @@ Export-ModuleMember -Function Test-PullRequestUpToDate
 function global:Get-PullRequestChecks
 {
     param(
-        [switch]$Verbose,
+        [switch]$Verbose=$false,
         $PullRequest = (Get-PullRequest -Verbose:$verbose | Select -First 1)
     )
 
@@ -76,7 +76,7 @@ Export-ModuleMember -Function Get-PullRequestChecks
 function global:Get-PullRequestBuildActions
 {
     param(
-      [switch]$verbose,
+      [switch]$verbose=$false,
       [Parameter(Mandatory=$true)]$PullRequestChecks)
 
     $c = $PullRequestChecks.Count
