@@ -72,5 +72,6 @@ Export-ModuleMember -Function Edit-BuildErrors
 set-alias goerror Edit-BuildErrors -scope global
 Export-ModuleMember -Alias goerror
 
-.$PSScriptRoot\MSBuild-Alias.ps1
+set-alias Enter-VsShell $PSScriptRoot\Enter-VsShell.ps1 -scope global
+Export-ModuleMember -Alias Enter-VsShell
 

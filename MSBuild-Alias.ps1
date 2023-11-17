@@ -33,7 +33,7 @@ function global:msb()
 }
 
 set-alias msbuild msb -scope global
-Export-ModuleMember -alias msbuild
+#Export-ModuleMember -alias msbuild
 
 #if ($msBuildAlias.IsPresent)
 #{
