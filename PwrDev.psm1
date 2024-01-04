@@ -75,3 +75,5 @@ Export-ModuleMember -Alias goerror
 set-alias Enter-VsShell $PSScriptRoot\Enter-VsShell.ps1 -scope global
 Export-ModuleMember -Alias Enter-VsShell
 
+.$PSScriptRoot\BuildQueue.ps1
+
