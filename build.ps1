@@ -12,6 +12,10 @@ param(
   $Platform="x64"
 )
 
+if (-Not (Test-Path $baseResultDir)) {
+  mkdir $baseResultDir | Out-Null
+}
+
 # Build the /p: arguments
 $msbuildProps = $Properties.GetEnumerator() | ForEach-Object {
   "/p:$($_.Key)=$($_.Value)"
