@@ -1,3 +1,4 @@
+[CmdLetBinding()]
 param(
   [Parameter(Mandatory=$false)][String]$vsVersion = "Enterprise",
   [Parameter(Mandatory=$false)][String]$vsYear = "2022"
@@ -6,7 +7,7 @@ param(
 $devEnvCmd = get-command devenv.exe*
 if ($null -ne $devEnvCmd)
 {
-   Write-Host "Already Under DevShell"
+   Write-Verbose "Already Under DevShell"
    .$PSScriptRoot\MSBuild-Alias.ps1
    return;
 }
@@ -17,31 +18,53 @@ $vsVersions = $installPath |
     @{Name='Year';Expression={Split-Path (Split-Path $_) -Leaf | Select-Object -First 1}},
     @{Name='Path';Expression={$_}}
 
-Write-Host "Found the following versions:"
-Write-Host $vsVersions
-
-$ver = $vsVersions | Where-Object {($_.Version -eq $vsVersion) -and ($_.Year -eq $vsYear) } | Select-Object -First 1
-Write-Host "Match the following versions:"
-$ver |% {
-  Write-Host ("  "+$_)
+Write-Verbose "Found the following versions:"
+$vsVersions |% {
+  $y = $_.Year
+  $vsV = $_.Version
+  $p = $_.Path
+  Write-Verbose "Year: $y, Version: $vsV, Path $p"
 }
 
-if ($null -eq $ver)
-{
-  throw "Visual Studio version $vsVersion not found"
+if ($null -eq $vsVersions) {
+  Write-Error "Not VS Tools found"
+  return
 }
 
-if ($ver.Length -gt 1)
-{
-  throw "Multiple Visual Studio versions match"
+function Find-VsVer {
+  param($ver,$year)
+  Write-Verbose "Looking for version: $ver and year $year"
+  $v = $vsVersions | Where-Object { ($_.Version -eq $ver) -and ($_.Year -eq $year) } | Select-Object -First 1
+  return $v
 }
+
+$requestedEditionsOrder = @(
+  @($vsVersion, $vsYear),
+  @('Enterprise', $vsYear),
+  @('Preview', '2022'),
+  @('Professional', '2022')
+  @('Community', '2022'),
+  @($vsVersion, '2019'),
+  @('Enterprise', '2019'),
+  @('Preview', '2019'),
+  @('Professional', '2019'),
+  @('Community', '2019')
+)
+
+$ver = $requestedEditionsOrder |% { Find-VsVer -ver $_[0] -year $_[1] } | Select-Object -First 1
+if ($null -eq $ver) {
+  Write-Error "Could not find a match for VS Tools"
+  return
+}
+Write-Verbose "Match the following versions:"
+Write-Verbose ("  "+$ver)
 
 $devShellModule = Join-Path $ver.Path "Common7\Tools\Microsoft.VisualStudio.DevShell.dll"
-Write-Host "Loading module $devShellModule"
+Write-Verbose "Loading module $devShellModule"
 Import-Module $devShellModule
 $vsVerPath = $ver.Path
-Write-Host "Loading VS Shell from $vsVerPath"
-Enter-VsDevShell -VsInstallPath $vsVerPath -SkipAutomaticLocation
+Write-Verbose "Loading VS Shell from $vsVerPath"
+Enter-VsDevShell -VsInstallPath $vsVerPath -SkipAutomaticLocation | Write-Verbose
 
 .$PSScriptRoot\MSBuild-Alias.ps1
 

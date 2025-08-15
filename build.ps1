@@ -22,6 +22,16 @@ $msbuildProps = $Properties.GetEnumerator() | ForEach-Object {
 }
 $msbuildPropsArgs = "$($msbuildProps -join ' ')"
 
+function Write-Url {
+  param(
+    $message,
+    $file)
+
+  $esc = "`e"  # PowerShell escape for ASCII 27
+  $sequence = "${esc}]8;;$file`a$message${esc}]8;;`a"
+  Write-Host $sequence
+}
+
 function Do-Build {
   param ($dir)
 
@@ -102,7 +112,7 @@ function Do-Build {
     Write-Verbose "Duration:$durationStr"
     Set-Content -Value $durationStr -Path $logDurationFile
     Get-Content $logErrFileName | Write-Host
-    Write-Host $logFileBuildBL
+    Write-Url -Message "binlog" -File $logFileBuildBL
     Write-Verbose "End build for $dir"
     #if (0 -eq $errorLevel) {
     #  return $duration
