@@ -56,11 +56,10 @@ function Do-Build {
   try {
     Write-Verbose "Begin build for $projName"
     $time = [datetime]::Now.ToString("yy.dd.MM-HH.mm.ss")
-    if ("" -eq $id) {
-      $br = git branch --show-current
-      $br = ($br -split '/') | Select-Object -Last 1
-    } else {
-      $br = $id
+    $br = git branch --show-current
+    $br = ($br -split '/') | Select-Object -Last 1
+    if ("" -ne $id) {
+      $br += ".$id"
     }
     $resultDir = "$baseResultDir"
     MkDir $resultDir -ErrorAction Ignore | Out-Null
@@ -75,8 +74,6 @@ function Do-Build {
     $logWrnFileName = "$logFileName.wrn"
     Write-Verbose "WrnFileName: $logWrnFileName"
     $logDurationFile = "$resultDir\build.$suffixName.txt"
-    ps msbuild* | kill
-    ps cl* | kill
 
     if ($clean) {
       git clean -dfx .
