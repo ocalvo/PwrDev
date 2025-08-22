@@ -101,7 +101,7 @@ function Do-Build {
 
     Write-Verbose "LogFile:$logFileBuildBL"
     $start = [DateTime]::Now
-    msbuild.exe $sln "/p:Configuration=$Configuration" "/p:Platform=$Platform" "/p:AppxBundlePlatforms=$Platform" "/p:AppxBundle=Always" "/t:$target" $msbuildPropsArgs "/bl:LogFile=$LogFileBuildBL" /m /v:d -tl "-flp2:LogFile=$logErrFileName;errorsonly" "-flp3:LogFile=$logWrnFileName;warningsonly"
+    msbuild.exe $sln "/p:Configuration=$Configuration" "/p:Platform=$Platform" "/t:$target" $msbuildPropsArgs "/bl:LogFile=$LogFileBuildBL" /m /v:d -tl "-flp2:LogFile=$logErrFileName;errorsonly" "-flp3:LogFile=$logWrnFileName;warningsonly"
     $errorLevel = $LASTEXITCODE
     $end = [DateTime]::Now
     $duration = $end - $start
