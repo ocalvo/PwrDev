@@ -78,3 +78,6 @@ Export-ModuleMember -Alias Enter-VsShell
 set-alias build $PSScriptRoot\Build.ps1 -scope global
 Export-ModuleMember -Alias build
 
+set-alias test-build $PSScriptRoot\Test-Build.ps1 -scope global
+Export-ModuleMember -Alias test-build
+
