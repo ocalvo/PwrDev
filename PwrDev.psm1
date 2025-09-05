@@ -81,3 +81,5 @@ Export-ModuleMember -Alias build
 set-alias test-build $PSScriptRoot\Test-Build.ps1 -scope global
 Export-ModuleMember -Alias test-build
 
+set-alias devenv $PSScriptRoot\Execute-DevEnv.ps1 -scope global
+Export-ModuleMember -Alias devenv

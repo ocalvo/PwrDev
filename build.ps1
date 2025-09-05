@@ -3,24 +3,36 @@ param(
   [switch]$restore,
   [switch]$clean,
   [switch]$noBuild,
-  $id = "",
+  [switch]$noParallel,
+  [switch]$rawOutput,
+  $Id = "",
   $baseResultDir = "$env:NUGET_PACKAGES\msblogs",
-  $sln = "auto",
-  $target = "Build",
+  $Project = "auto",
+  $Target = "Build",
   [hashtable]$Properties = @{},
   $Configuration="Debug",
-  $Platform="x64"
+  $Platform="x64",
+  $Verbosity="d"
 )
 
 if (-Not (Test-Path $baseResultDir)) {
   mkdir $baseResultDir | Out-Null
 }
 
-# Build the /p: arguments
-$msbuildProps = $Properties.GetEnumerator() | ForEach-Object {
-  "/p:$($_.Key)=$($_.Value)"
+$msBuildArgs = @()
+if (-Not $noParallel) {
+  $msbuildArgs += "/m"
 }
-$msbuildPropsArgs = "$($msbuildProps -join ' ')"
+if (-Not $rawOutput) {
+  $msbuildArgs += "/tl"
+}
+# Build the /p: arguments
+$msBuildArgs += $Properties.GetEnumerator() | ForEach-Object {
+  $key = $_.Key
+  $value = $_.Value
+  Write-Verbose "Setting property: $key -> $value"
+  "/p:$Key=$Value"
+}
 
 function Write-Url {
   param(
@@ -35,22 +47,15 @@ function Write-Url {
 function Do-Build {
   param ($dir)
 
-  if ("auto" -eq $sln) {
-    $slnItem = Get-ChildItem "$dir\*.sln" | Select-Object -First 1
-    if ($null -eq $slnItem) {
+  if ("auto" -eq $Project) {
+    $projectItem = Get-ChildItem "$dir\*.sln" | Select-Object -First 1
+    if ($null -eq $projectItem) {
       Write-Error "Solution not found in $dir"
       return
     }
-    $sln = $slnItem.Name
+  } else {
+    $projectItem = Get-Item $Project
   }
-
-  if (-Not (Test-Path "$dir\$sln")) {
-     Write-Error "Project $dir\$sln not found"
-     return
-  }
-
-  $slnItem = get-item "$dir\$sln"
-  $projName = $slnItem.BaseName
 
   pushd $dir
   try {
@@ -61,6 +66,7 @@ function Do-Build {
     if ("" -ne $id) {
       $br += ".$id"
     }
+    $projName = $projectItem.BaseName
     $resultDir = "$baseResultDir"
     MkDir $resultDir -ErrorAction Ignore | Out-Null
     $tN = ($target -split '\\') | Select-Object -Last 1
@@ -91,7 +97,7 @@ function Do-Build {
 
     if ($restore -or $clean) {
       Write-Verbose "Restore LogFile:$logFileRestoreBL"
-      msbuild.exe $sln '/t:Restore' '/p:RestorePackagesConfig=true' "/bl:LogFile=$logFileRestoreBL" '/v:d' '-tl' "/p:Platform=$Platform" "/p:Configuration=$Configuration" /m $msbuildPropsArgs
+      msbuild.exe $projectItem.FullName '/t:Restore' '/p:RestorePackagesConfig=true' "/bl:LogFile=$logFileRestoreBL" "/v:$Verbosity" "/p:Platform=$Platform" "/p:Configuration=$Configuration" @msBuildArgs
     }
 
     if ($noBuild) {
@@ -101,7 +107,7 @@ function Do-Build {
 
     Write-Verbose "LogFile:$logFileBuildBL"
     $start = [DateTime]::Now
-    msbuild.exe $sln "/p:Configuration=$Configuration" "/p:Platform=$Platform" "/t:$target" $msbuildPropsArgs "/bl:LogFile=$LogFileBuildBL" /m /v:d -tl "-flp2:LogFile=$logErrFileName;errorsonly" "-flp3:LogFile=$logWrnFileName;warningsonly"
+    msbuild.exe $projectItem.FullName "/p:Configuration=$Configuration" "/p:Platform=$Platform" "/t:$target" "/bl:LogFile=$LogFileBuildBL" "/v:$Verbosity" "-flp2:LogFile=$logErrFileName;errorsonly" "-flp3:LogFile=$logWrnFileName;warningsonly" @msbuildArgs
     $errorLevel = $LASTEXITCODE
     $end = [DateTime]::Now
     $duration = $end - $start
