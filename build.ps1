@@ -80,6 +80,7 @@ function Do-Build {
     $logWrnFileName = "$logFileName.wrn"
     Write-Verbose "WrnFileName: $logWrnFileName"
     $logDurationFile = "$resultDir\build.$suffixName.txt"
+    $logExitLevelFile = "$resultDir\build.$suffixName.exitcode"
 
     if ($clean) {
       git clean -dfx .
@@ -114,12 +115,10 @@ function Do-Build {
     $durationStr = $duration.ToString("hh\:mm\:ss\.fff")
     Write-Verbose "Duration:$durationStr"
     Set-Content -Value $durationStr -Path $logDurationFile
+    Set-Content -Value $errorLevel -Path $logExitLevelFile
     Get-Content $logErrFileName | Write-Host
     Write-Url -Message "binlog" -File $logFileBuildBL
     Write-Verbose "End build for $dir"
-    #if (0 -eq $errorLevel) {
-    #  return $duration
-    #}
   } finally {
     popd
   }
