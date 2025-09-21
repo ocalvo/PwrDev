@@ -1,31 +1,6 @@
 
-function global:Get-BuildErrors()
-{
-  $buildErrorsDir = ".\"
-  if ($null -ne $global:lastBuildDir) { $buildErrorsDir = $global:lastBuildDir }
-
-  $buildErrorsFile = ($buildErrorsDir + "\build" + $env:_BuildType + ".err")
-  if (!(Test-Path $buildErrorsFile))
-  {
-    return;
-  }
-  Get-Content $buildErrorsFile | where-object { $_ -like "*(*)*: error *" } |ForEach-Object {
-    $fileStart = $_.IndexOf(">")
-    $fileEnd = $_.IndexOf("(")
-    $fileName = $_.SubString($fileStart + 1, $fileEnd - $fileStart - 1)
-    $lineNumberEnd =  $_.IndexOf(")")
-    $lineNumber = $_.SubString($fileEnd + 1, $lineNumberEnd - $fileEnd - 1)
-    $errorStart = $_.IndexOf(": ");
-    $errorDescription = $_.SubString($errorStart + 2);
-    $columnNumberStart= $lineNumber.IndexOf(",")
-    if (-1 -ne $columnNumberStart)
-    {
-      $lineNumber = $lineNumber.substring(0, $columnNumberStart)
-    }
-    [System.Tuple]::Create($fileName,$lineNumber,$errorDescription)
-  }
-}
-Export-ModuleMember -Function Get-BuildErrors
+set-alias Get-BuildErrors $PSScriptRoot\Get-BuildErrors.ps1 -scope global
+Export-ModuleMember -Alias Get-BuildErrors
 
 function global:Open-Editor($fileName,$lineNumber)
 {

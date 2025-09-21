@@ -72,6 +72,7 @@ function Do-Build {
     $tN = ($target -split '\\') | Select-Object -Last 1
     $tN = $tN.Replace(":",".")
     $suffixName = "$time.$projName.$tN.$br.$Configuration"
+    $env:lastBuildLog = "$resultDir\build.$suffixName"
     $logFileRestoreBL = "$resultDir\restore.$suffixName.binlog"
     $logFileBuildBL = "$resultDir\build.$suffixName.binlog"
     $logFileName = "$resultDir\build.$suffixName"
