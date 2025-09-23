@@ -66,5 +66,3 @@ $vsVerPath = $ver.Path
 Write-Verbose "Loading VS Shell from $vsVerPath"
 Enter-VsDevShell -VsInstallPath $vsVerPath -SkipAutomaticLocation | Write-Verbose
 
-.$PSScriptRoot\MSBuild-Alias.ps1
-
