@@ -8,7 +8,6 @@ $devEnvCmd = get-command devenv.exe*
 if ($null -ne $devEnvCmd)
 {
    Write-Verbose "Already Under DevShell"
-   .$PSScriptRoot\MSBuild-Alias.ps1
    return;
 }
 

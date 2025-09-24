@@ -5,6 +5,8 @@ param(
   [switch]$noBuild,
   [switch]$noParallel,
   [switch]$rawOutput,
+  [switch]$noConsoleLoger,
+  [switch]$enableAutoResponse,
   $Id = "",
   $baseResultDir = "$env:NUGET_PACKAGES\msblogs",
   $Project = "auto",
@@ -12,7 +14,9 @@ param(
   [hashtable]$Properties = @{},
   $Configuration="Debug",
   $Platform="x64",
-  $Verbosity="d"
+  $ConsoleVerbosity = "m",
+  $Verbosity="diag",
+  $ConsoleLoggerParameters = "Verbosity=${ConsoleVerbosity}"
 )
 
 if (-Not (Test-Path $baseResultDir)) {
@@ -26,6 +30,16 @@ if (-Not $noParallel) {
 if (-Not $rawOutput) {
   $msbuildArgs += "/tl"
 }
+if (-Not $enableAutoResponse) {
+  $msbuildArgs += "-noautoresponse"
+}
+if ($noConsoleLogger) {
+  $msbuildArgs += "-noconsolelogger"
+}
+if ("" -ne $ConsoleLoggerParameters) {
+  $msbuildArgs += "-clp:$ConsoleLoggerParameters"
+}
+
 # Build the /p: arguments
 $msBuildArgs += $Properties.GetEnumerator() | ForEach-Object {
   $key = $_.Key
@@ -77,6 +91,7 @@ function Do-Build {
     $logFileBuildBL = "$resultDir\build.$suffixName.binlog"
     $logFileName = "$resultDir\build.$suffixName"
     $logErrFileName = "$logFileName.err"
+    $logTxtFileName = "$resultDir\build.$suffixName.log"
     Write-Verbose "ErrFileName: $logErrFileName"
     $logWrnFileName = "$logFileName.wrn"
     Write-Verbose "WrnFileName: $logWrnFileName"
@@ -109,7 +124,7 @@ function Do-Build {
 
     Write-Verbose "LogFile:$logFileBuildBL"
     $start = [DateTime]::Now
-    msbuild.exe $projectItem.FullName "/p:Configuration=$Configuration" "/p:Platform=$Platform" "/t:$target" "/bl:LogFile=$LogFileBuildBL" "/v:$Verbosity" "-flp2:LogFile=$logErrFileName;errorsonly" "-flp3:LogFile=$logWrnFileName;warningsonly" @msbuildArgs
+    msbuild.exe $projectItem.FullName "/p:Configuration=$Configuration" "/p:Platform=$Platform" "/t:$target" "-bl:LogFile=$LogFileBuildBL" "-flp:Logfile=$LogTxtFileName;Verbosity=$Verbosity" "-flp2:LogFile=$logErrFileName;errorsonly" "-flp3:LogFile=$logWrnFileName;warningsonly" "/v:$Verbosity" @msbuildArgs
     $errorLevel = $LASTEXITCODE
     $end = [DateTime]::Now
     $duration = $end - $start
@@ -117,8 +132,10 @@ function Do-Build {
     Write-Verbose "Duration:$durationStr"
     Set-Content -Value $durationStr -Path $logDurationFile
     Set-Content -Value $errorLevel -Path $logExitLevelFile
-    Get-Content $logErrFileName | Write-Host
-    Write-Url -Message "binlog" -File $logFileBuildBL
+    if (Test-Path $logErrFileName) {
+      Get-Content $logErrFileName | Write-Host
+    }
+    Write-Url -Message "$logFileBuildBL" -File $logFileBuildBL
     Write-Verbose "End build for $dir"
   } finally {
     popd
