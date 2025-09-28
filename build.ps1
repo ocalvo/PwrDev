@@ -102,15 +102,17 @@ function Do-Build {
       git clean -dfx .
     }
 
-    $packagesDir = "$dir\packages"
-    Write-Verbose "SymLink $packagesDir -> ${env:NUGET_PACKAGES}"
-    if (Test-Path $packagesDir) {
-      $isSymLink = (Get-Item $packagesDir).Attributes -band [System.IO.FileAttributes]::ReparsePoint
-      if ([System.IO.FileAttributes]::ReparsePoint -ne $isSymLink) {
-        Remove-Item $packagesDir -Rec -Force
+    if ($projectItem.Extension -eq ".sln") {
+      $packagesDir = "$dir\packages"
+      Write-Verbose "SymLink $packagesDir -> ${env:NUGET_PACKAGES}"
+      if (Test-Path $packagesDir) {
+        $isSymLink = (Get-Item $packagesDir).Attributes -band [System.IO.FileAttributes]::ReparsePoint
+        if ([System.IO.FileAttributes]::ReparsePoint -ne $isSymLink) {
+          Remove-Item $packagesDir -Rec -Force
+        }
       }
+      New-Item $packagesDir -ItemType SymbolicLink -Target $env:NUGET_PACKAGES -Force | Out-Null
     }
-    New-Item $packagesDir -ItemType SymbolicLink -Target $env:NUGET_PACKAGES -Force | Out-Null
 
     if ($restore -or $clean) {
       Write-Verbose "Restore LogFile:$logFileRestoreBL"
