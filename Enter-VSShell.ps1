@@ -39,8 +39,8 @@ function Find-VsVer {
 
 $requestedEditionsOrder = @(
   @($vsVersion, $vsYear),
-  @('Enterprise', $vsYear),
   @('Insiders', '18'),
+  @('Enterprise', $vsYear),
   @('Preview', '2022'),
   @('Professional', '2022')
   @('Community', '2022'),
