@@ -4,10 +4,9 @@ param(
   [Parameter(Mandatory=$false)][String]$vsYear = "2022"
 )
 
-$devEnvCmd = get-command devenv.exe*
-if ($null -ne $devEnvCmd)
+if (Test-Path env:VSCMD_VER)
 {
-   Write-Verbose "Already Under DevShell"
+   Write-Host "Already Under DevShell:${env:VSCMD_VER}"
    return;
 }
 
@@ -65,4 +64,6 @@ Import-Module $devShellModule
 $vsVerPath = $ver.Path
 Write-Verbose "Loading VS Shell from $vsVerPath"
 Enter-VsDevShell -VsInstallPath $vsVerPath -SkipAutomaticLocation | Write-Verbose
+
+Write-Host "DevShell:${env:VSCMD_VER}"
 
