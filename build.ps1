@@ -8,7 +8,8 @@ param(
   [switch]$noConsoleLoger,
   [switch]$enableAutoResponse,
   $Id = "",
-  $baseResultDir = "$env:NUGET_PACKAGES\msblogs",
+  $NUGET_PACKAGES = (Test-Path env:NUGET_PACKAGES) ? $env:NUGET_PACKAGES : "~/.nuget",
+  $baseResultDir = "$NUGET_PACKAGES/msblogs",
   $Project = "auto",
   $Target = "Build",
   [hashtable]$Properties = @{},
@@ -20,7 +21,7 @@ param(
 )
 
 if (-Not (Test-Path $baseResultDir)) {
-  mkdir $baseResultDir | Out-Null
+  New-Item $baseResultDir -ItemType Directory | Out-Null
 }
 
 $msBuildArgs = @()
@@ -82,7 +83,7 @@ function Do-Build {
     }
     $projName = $projectItem.BaseName
     $resultDir = "$baseResultDir"
-    MkDir $resultDir -ErrorAction Ignore | Out-Null
+    New-Item $resultDir -ItemType Directory -ErrorAction Ignore | Out-Null
     $tN = ($target -split '\\') | Select-Object -Last 1
     $tN = $tN.Replace(":",".")
     $suffixName = "$time.$projName.$tN.$br.$Configuration,$Platform"
@@ -103,20 +104,20 @@ function Do-Build {
     }
 
     if ($projectItem.Extension -eq ".sln") {
-      $packagesDir = "$dir\packages"
-      Write-Verbose "SymLink $packagesDir -> ${env:NUGET_PACKAGES}"
+      $packagesDir = "$dir/packages"
+      Write-Verbose "SymLink $packagesDir -> ${NUGET_PACKAGES}"
       if (Test-Path $packagesDir) {
         $isSymLink = (Get-Item $packagesDir).Attributes -band [System.IO.FileAttributes]::ReparsePoint
         if ([System.IO.FileAttributes]::ReparsePoint -ne $isSymLink) {
           Remove-Item $packagesDir -Rec -Force
         }
       }
-      New-Item $packagesDir -ItemType SymbolicLink -Target $env:NUGET_PACKAGES -Force | Out-Null
+      New-Item $packagesDir -ItemType SymbolicLink -Target $NUGET_PACKAGES -Force | Out-Null
     }
 
     if ($restore -or $clean) {
       Write-Verbose "Restore LogFile:$logFileRestoreBL"
-      msbuild.exe $projectItem.FullName '/t:Restore' '/p:RestorePackagesConfig=true' "/bl:LogFile=$logFileRestoreBL" "/v:$Verbosity" "/p:Platform=$Platform" "/p:Configuration=$Configuration" @msBuildArgs
+      msbuild $projectItem.FullName '/t:Restore' '/p:RestorePackagesConfig=true' "/bl:LogFile=$logFileRestoreBL" "/v:$Verbosity" "/p:Platform=$Platform" "/p:Configuration=$Configuration" @msBuildArgs
     }
 
     if ($noBuild) {
@@ -126,7 +127,7 @@ function Do-Build {
 
     Write-Verbose "LogFile:$logFileBuildBL"
     $start = [DateTime]::Now
-    msbuild.exe $projectItem.FullName "/p:Configuration=$Configuration" "/p:Platform=$Platform" "/t:$target" "-bl:LogFile=$LogFileBuildBL" "-flp:Logfile=$LogTxtFileName;Verbosity=$Verbosity" "-flp2:LogFile=$logErrFileName;errorsonly" "-flp3:LogFile=$logWrnFileName;warningsonly" "/v:$Verbosity" @msbuildArgs
+    msbuild $projectItem.FullName "/p:Configuration=$Configuration" "/p:Platform=$Platform" "/t:$target" "-bl:LogFile=$LogFileBuildBL" "-flp:Logfile=$LogTxtFileName;Verbosity=$Verbosity" "-flp2:LogFile=$logErrFileName;errorsonly" "-flp3:LogFile=$logWrnFileName;warningsonly" "/v:$Verbosity" @msbuildArgs
     $errorLevel = $LASTEXITCODE
     $end = [DateTime]::Now
     $duration = $end - $start
