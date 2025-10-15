@@ -10,7 +10,7 @@ $msbuildCmd = Get-Command msbuild -ErrorAction Ignore
 if ($null -ne $msbuildCmd)
 {
    $msVer = msbuild -nologo -version | Select-Object -Last 1
-   Write-Host "Already Under DevShell:${msVer}"
+   Write-Output "Already Under DevShell:${msVer}"
    return;
 }
 
@@ -101,6 +101,6 @@ if (($__platform) -eq 'Windows' -and (Test-Path $vsWhere)) {
   Write-Verbose "Installing msbuild alias: msbuild -> Invoke-DotnetMSBuild"
   set-alias msbuild Invoke-DotnetMSBuild -scope Global
   $msVer = msbuild -nologo -version | Select-Object -Last 1
-  Write-Host "DevShell:${msVer}"
+  Write-Output "DevShell:${msVer}"
 }
 

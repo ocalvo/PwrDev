@@ -20,6 +20,8 @@ param(
   $ConsoleLoggerParameters = "Verbosity=${ConsoleVerbosity}"
 )
 
+$script:errorLevel = 0
+
 if (-Not (Test-Path $baseResultDir)) {
   New-Item $baseResultDir -ItemType Directory | Out-Null
 }
@@ -63,16 +65,18 @@ function Do-Build {
   param ($dir)
 
   if ("auto" -eq $Project) {
-    $projectItem = Get-ChildItem "$dir\*.sln" | Select-Object -First 1
+    Write-Verbose ("Looking for project in directory:{0}" -f $dir)
+    $projectItem = Get-ChildItem -File ("${dir}/*.sln","${dir}/*.*proj") | Select-Object -First 1
     if ($null -eq $projectItem) {
-      Write-Error "Solution not found in $dir"
-      return
+      Write-Error "Project not found in $dir"
+      return 404
     }
   } else {
     $projectItem = Get-Item $Project
   }
 
   pushd $dir
+  $script:errorLevel = 0
   try {
     Write-Verbose "Begin build for $projName"
     $time = [datetime]::Now.ToString("yy.dd.MM-HH.mm.ss")
@@ -104,31 +108,35 @@ function Do-Build {
     }
 
     if ($projectItem.Extension -eq ".sln") {
-      $packagesDir = "$dir/packages"
-      Write-Verbose "SymLink $packagesDir -> ${NUGET_PACKAGES}"
-      if (Test-Path $packagesDir) {
-        $isSymLink = (Get-Item $packagesDir).Attributes -band [System.IO.FileAttributes]::ReparsePoint
-        if ([System.IO.FileAttributes]::ReparsePoint -ne $isSymLink) {
-          Remove-Item $packagesDir -Rec -Force
+      $firstConfigFile = Get-ChildItem packages.config -Path $dir -File -Recurse -Depth 4 -FollowSymlink:$false | Select-Object -First 1
+      $hasCppPackages = $null -ne $firstConfigFile
+      if ($hasCppPackages) {
+        $packagesDir = "$dir/packages"
+        Write-Verbose "SymLink $packagesDir -> ${NUGET_PACKAGES}"
+        if (Test-Path $packagesDir) {
+          $isSymLink = (Get-Item $packagesDir).Attributes -band [System.IO.FileAttributes]::ReparsePoint
+          if ([System.IO.FileAttributes]::ReparsePoint -ne $isSymLink) {
+            Remove-Item $packagesDir -Rec -Force
+          }
         }
+        New-Item $packagesDir -ItemType SymbolicLink -Target $NUGET_PACKAGES -Force | Out-Null
       }
-      New-Item $packagesDir -ItemType SymbolicLink -Target $NUGET_PACKAGES -Force | Out-Null
     }
 
     if ($restore -or $clean) {
       Write-Verbose "Restore LogFile:$logFileRestoreBL"
       msbuild $projectItem.FullName '/t:Restore' '/p:RestorePackagesConfig=true' "/bl:LogFile=$logFileRestoreBL" "/v:$Verbosity" "/p:Platform=$Platform" "/p:Configuration=$Configuration" @msBuildArgs
+      $script:errorLevel = $LASTEXITCODE
     }
 
     if ($noBuild) {
-      Write-Verbose "No build, nothing else todo"
-      return
+      Write-Host "No build, nothing else todo"
     }
 
     Write-Verbose "LogFile:$logFileBuildBL"
     $start = [DateTime]::Now
     msbuild $projectItem.FullName "/p:Configuration=$Configuration" "/p:Platform=$Platform" "/t:$target" "-bl:LogFile=$LogFileBuildBL" "-flp:Logfile=$LogTxtFileName;Verbosity=$Verbosity" "-flp2:LogFile=$logErrFileName;errorsonly" "-flp3:LogFile=$logWrnFileName;warningsonly" "/v:$Verbosity" @msbuildArgs
-    $errorLevel = $LASTEXITCODE
+    $script:errorLevel = $LASTEXITCODE
     $end = [DateTime]::Now
     $duration = $end - $start
     $durationStr = $duration.ToString("hh\:mm\:ss\.fff")
@@ -145,7 +153,9 @@ function Do-Build {
   }
 }
 
-Enter-VsShell -vsVersion Professional
+Enter-VsShell | Write-Verbose
 
-Do-Build (pwd).Path
+$bPath = (pwd).Path
+Do-Build $bPath
+Exit $script:errorlevel
 
