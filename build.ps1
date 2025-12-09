@@ -101,6 +101,18 @@ begin {
 
 process {
 
+  function Get-GlobalPackagesFolder {
+    param($dir)
+    if (Test-Path "$dir/NuGet.config") {
+      $nugetGConfig = [xml](Get-Content "$dir/NuGet.config")
+      $nugetConfig = $nugetGConfig.configuration.config.add
+      if ($null -ne $nugetConfig) {
+        return $nugetConfig.GetEnumerator() | where { $_.key -eq "globalPackagesFolder" } | select -ExpandProperty value
+      }
+    }
+    return $null
+  }
+
   if (0 -ne $script:errorLevel) {
     Write-Verbose ("Already failed with error code {0}" -f $script:errorLevel)
     return
@@ -147,6 +159,10 @@ process {
     $hasCppPackages = $null -ne $firstConfigFile
     if ($hasCppPackages) {
       $packagesDir = "$dir/packages"
+    } else {
+      $packagesDir = Get-GlobalPackagesFolder -dir $dir
+    }
+    if (($null -ne $packagesDir) -and (Test-Path env:NUGET_PACKAGES)) {
       Write-Verbose "SymLink $packagesDir -> ${NUGET_PACKAGES}"
       if (Test-Path $packagesDir) {
         $isSymLink = (Get-Item $packagesDir).Attributes -band [System.IO.FileAttributes]::ReparsePoint
