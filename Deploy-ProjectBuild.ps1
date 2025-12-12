@@ -5,6 +5,7 @@ param(
   $Config = "Debug",
   $Target = $env:BUILD_DEFAULT_TARGET,
   $AppxRecipe = $env:BUILD_APPX_RECIPE,
+  [switch]$SkipDeploy,
   [switch]$SkipBuild,
   [switch]$Clean)
 
@@ -13,6 +14,7 @@ begin {
   Write-Verbose "Final Target: $finalTarget"
   $finalAppxRecipe = ($AppxRecipe -f $Config,$Platform,$UserParam01)
   Write-Verbose "Final Appx Recipe: $finalAppxRecipe"
+  $errorCode = 0
 }
 
 process {
@@ -25,7 +27,7 @@ process {
     Write-Verbose "Skipping build as per user request."
     $errorCode = 0
   }
-  if ($errorCode -eq 0) {
+  if (-Not $SkipDeploy -and $errorCode -eq 0) {
     Write-Verbose "Starting deployment using Appx Recipe: $finalAppxRecipe"
     DeployAppRecipe $finalAppxRecipe
     $errorCode = $LASTEXITCODE

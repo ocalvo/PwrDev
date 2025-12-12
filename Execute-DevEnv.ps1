@@ -7,7 +7,7 @@ param(
 begin {
   $aliasExecuted = $MyInvocation.InvocationName
   Write-Verbose "Executing alias: $aliasExecuted with arguments: $args"
-  Enter-VsShell
+  Enter-VsShell | Write-Verbose
   $cmd = Get-Command $aliasExecuted -ErrorAction Ignore
   if ($null -eq $cmd) {
     Write-Warning "Alias $aliasExecuted not found after entering VS Shell."
