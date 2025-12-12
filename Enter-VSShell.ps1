@@ -6,9 +6,7 @@ param(
 )
 
 $msbuildCmd = Get-Command msbuild -ErrorAction Ignore
-
-if ($null -ne $msbuildCmd)
-{
+if ($null -ne $msbuildCmd -and $msbuildCmd.CommandType -ne 'Alias') {
    $msVer = msbuild -nologo -version | Select-Object -Last 1
    Write-Output "Already Under DevShell:${msVer}"
    return;
