@@ -7,17 +7,42 @@ param(
   [switch]$rawOutput,
   [switch]$noConsoleLoger,
   [switch]$enableAutoResponse,
-  $Id = "",
+  [string]$Id = "",
   $NUGET_PACKAGES = $env:NUGET_PACKAGES,
   $baseResultDir = "$NUGET_PACKAGES/msblogs",
   $Project = "auto",
-  $Target,
+  [string]$Target,
+  [Parameter()]
   [hashtable]$Properties = @{},
-  $Configuration,
-  $Platform,
-  $ConsoleVerbosity = "m",
-  $Verbosity="diag",
-  $ConsoleLoggerParameters = "Verbosity=${ConsoleVerbosity}"
+  [Parameter()]
+  [ArgumentCompleter({
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameters)
+      'Release','Debug' | Where-Object { $_ -like "$wordToComplete*" }
+    })]
+  [string]$Configuration,
+  [Parameter()]
+  [ArgumentCompleter({
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameters)
+      'ARM64ec','x64','x86','ARM64','AnyCPU' | Where-Object { $_ -like "$wordToComplete*" }
+    })]
+  [string]$Platform,
+  [Parameter()]
+  [ValidateSet('Quiet','Minimal','Normal','Detailed','Diagnostic')]
+  [ArgumentCompleter({
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameters)
+      'Quiet','Minimal','Normal','Detailed','Diagnostic' |
+        Where-Object { $_ -like "$wordToComplete*" }
+    })]  
+  [string]$ConsoleVerbosity = "Minimal",
+  [Parameter()]
+  [ValidateSet('Quiet','Minimal','Normal','Detailed','Diagnostic')]
+  [ArgumentCompleter({
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameters)
+      'Quiet','Minimal','Normal','Detailed','Diagnostic' |
+        Where-Object { $_ -like "$wordToComplete*" }
+    })]  
+  [string]$Verbosity='Diagnostic',
+  [string]$ConsoleLoggerParameters = "Verbosity=${ConsoleVerbosity}"
 )
 
 begin {
@@ -224,6 +249,11 @@ end {
   Write-Verbose "End build for $dir"
 
   Write-Verbose ("Exiting with error level {0}" -f $script:errorlevel)
+  if ($errorCode -ne 0)
+  {
+    Write-Error "Build failed with error code: $errorCode"
+  }
+
   Exit $script:errorlevel
 }
 

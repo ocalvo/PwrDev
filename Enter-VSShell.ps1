@@ -5,10 +5,8 @@ param(
   $vsWhere = "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe"
 )
 
-$msbuildCmd = Get-Command msbuild -ErrorAction Ignore
-if ($null -ne $msbuildCmd -and $msbuildCmd.CommandType -ne 'Alias') {
-   $msVer = msbuild -nologo -version | Select-Object -Last 1
-   Write-Output "Already Under DevShell:${msVer}"
+if (Test-Path env:VSCMD_VER) {
+   Write-Output "Already Under DevShell:${env:VSCMD_VER}"
    return;
 }
 
