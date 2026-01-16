@@ -73,3 +73,5 @@ Export-ModuleMember -Alias Deploy-ProjectBuild
 set-alias dpb Deploy-ProjectBuild -scope global
 Export-ModuleMember -Alias dpb
 
+.$PSScriptRoot\BuildQueue.ps1
+
