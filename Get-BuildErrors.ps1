@@ -25,5 +25,12 @@ Get-Content $buildErrorsFile | where-object { $_ -like "*(*)*: error *" } |ForEa
   {
     $lineNumber = $lineNumber.substring(0, $columnNumberStart)
   }
-  [System.Tuple]::Create($fileName,$lineNumber,$errorDescription)
+  $fileItem = Get-Item $fileName
+  $fileItem | Add-Member -MemberType NoteProperty -Name "LineNumber" -Value $lineNumber
+  $fileItem | Add-Member -MemberType NoteProperty -Name "Error" -Value $errorDescription
+  return [PSCustomObject]@{
+    File = $fileItem
+    LineNumber = $lineNumber
+    Error = $errorDescription
+  }
 }
