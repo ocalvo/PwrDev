@@ -61,8 +61,11 @@ if (($__platform) -eq 'Windows' -and (Test-Path $vsWhere)) {
   $requestedEditionsOrder = @(
     @($vsVersion, $vsYear),
     @('Insiders', '18'),
+    @('Enterprise', '18'),
+    @('Profesional', '18'),
     @('Enterprise', $vsYear),
     @('Preview', '2022'),
+    @('Enterprise', '2022'),
     @('Professional', '2022')
     @('Community', '2022'),
     @($vsVersion, '2019'),
