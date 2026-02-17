@@ -8,8 +8,7 @@ param(
   [switch]$noConsoleLoger,
   [switch]$enableAutoResponse,
   [string]$Id = "",
-  $NUGET_PACKAGES = $env:NUGET_PACKAGES,
-  $baseResultDir = "$NUGET_PACKAGES/msblogs",
+  $baseResultDir = (Join-Path ((Get-Location).Path) '.vs'),
   $Project = "auto",
   [string]$Target,
   [Parameter()]
@@ -46,6 +45,19 @@ param(
 )
 
 begin {
+  function Get-RepoRoot {
+    param($marker = '.git')
+    $repoRoot = Get-Item -Path . -Force | ForEach-Object {
+      $d = $_.FullName
+      while ($d -and -not (Test-Path (Join-Path $d $marker))) {
+        $d = Split-Path $d -Parent
+      }
+      $d
+    }
+  }
+
+  function Test-IsGitRepo { ($null -ne (Get-RepoRoot)) }
+
   Write-Verbose "Begin"
 
   Enter-VsShell | Write-Verbose
@@ -78,7 +90,7 @@ begin {
     Write-Verbose "Settings console logging parameters:$ConsoleLoggerParameters"
     $msbuildArgs += "-clp:$ConsoleLoggerParameters"
   }
-  if ($null -ne $Target) {
+  if ("" -ne $Target) {
     Write-Verbose "Build target:$Target"
     $msbuildArgs += "/t:$Target"
   }
@@ -91,13 +103,21 @@ begin {
     "/p:$Key=$Value"
   }
 
-  if ($null -ne $Platform) {
+  if (("" -eq $Platform) -and (Test-IsGitRepo)) {
     Write-Verbose "Setting platform:$Platform"
+    $hasCpp = Get-ChildItem *.vcxproj -File -Recurse -Depth 3 | Select-Object -First 1
+    if ($hasCpp) {
+      $Platform = $hasCpp ? $env:PROCESSOR_ARCHITECTURE : "AnyCPU"
+      if ($Platform -eq "AMD64") { $Platform = "X64" }
+    }
+  }
+  if ("" -ne $Platform) {
     $msBuildArgs += "/p:Platform=$Platform"
+    Write-Verbose "Platform:$Platform"
   }
 
-  if ($null -ne $Configuration) {
-    Write-Verbose "Setting config:$Platform"
+  if ("" -ne $Configuration) {
+    Write-Verbose "Setting config:$Configuration"
     $msBuildArgs += "/p:Configuration=$Configuration"
   }
 
@@ -111,7 +131,9 @@ begin {
 
   if ("auto" -eq $Project) {
     Write-Verbose ("Looking for project in directory:{0}" -f $dir)
-    $projectItem = Get-ChildItem -File ("${dir}/*.sln*","${dir}/*.*proj") | Select-Object -First 1
+    $projectItem = Get-ChildItem -File (
+      (Join-Path $dir '*.sln*'),
+      (Join-Path $dir '*.*proj')) | Select-Object -First 1
     if ($null -eq $projectItem) {
       Write-Error "Project not found in $dir"
       $script:errorLevel = 404
@@ -128,8 +150,9 @@ process {
 
   function Get-GlobalPackagesFolder {
     param($dir)
-    if (Test-Path "$dir/NuGet.config") {
-      $nugetGConfig = [xml](Get-Content "$dir/NuGet.config")
+    $nugetConfigPath = Join-Path $dir 'nuget.config'
+    if (Test-Path $nugetConfigPath) {
+      $nugetGConfig = [xml](Get-Content $nugetConfigPath)
       $nugetConfig = $nugetGConfig.configuration.config.add
       if ($null -ne $nugetConfig) {
         return $nugetConfig.GetEnumerator() | where { $_.key -eq "globalPackagesFolder" } | select -ExpandProperty value
@@ -158,16 +181,16 @@ process {
   $tN = ($target -split '\\') | Select-Object -Last 1
   $tN = $tN.Replace(":",".")
   $suffixName = (($time,$projName,$tN,$br,$Configuration,$Platform) | where { $_ }) -join '.'
-  $env:lastBuildLog = "$resultDir\build.$suffixName"
-  $logFileBuildBL = "$resultDir\build.$suffixName.binlog"
-  $logFileName = "$resultDir\build.$suffixName"
+  $env:lastBuildLog = Join-Path $resultDir "build.$suffixName"
+  $logFileBuildBL = Join-Path $resultDir "build.$suffixName.binlog"
+  $logFileName = Join-Path $resultDir "build.$suffixName"
   $logErrFileName = "$logFileName.err"
-  $logTxtFileName = "$resultDir\build.$suffixName.log"
+  $logTxtFileName = Join-Path $resultDir "build.$suffixName.log"
   Write-Verbose "ErrFileName: $logErrFileName"
   $logWrnFileName = "$logFileName.wrn"
   Write-Verbose "WrnFileName: $logWrnFileName"
-  $logDurationFile = "$resultDir\build.$suffixName.txt"
-  $logExitLevelFile = "$resultDir\build.$suffixName.exitcode"
+  $logDurationFile = Join-Path $resultDir "build.$suffixName.txt"
+  $logExitLevelFile = Join-Path $resultDir "build.$suffixName.exitcode"
 
   if ($clean) {
     git clean -dfx .
@@ -183,19 +206,19 @@ process {
     $firstConfigFile = Get-ChildItem packages.config -Path $dir -File -Recurse -Depth 4 -FollowSymlink:$false | Select-Object -First 1
     $hasCppPackages = $null -ne $firstConfigFile
     if ($hasCppPackages) {
-      $packagesDir = "$dir/packages"
+      $packagesDir = Join-Path $dir 'packages'
     } else {
       $packagesDir = Get-GlobalPackagesFolder -dir $dir
     }
     if (($null -ne $packagesDir) -and (Test-Path env:NUGET_PACKAGES)) {
-      Write-Verbose "SymLink $packagesDir -> ${NUGET_PACKAGES}"
+      Write-Verbose "SymLink $packagesDir -> ${env:NUGET_PACKAGES}"
       if (Test-Path $packagesDir) {
         $isSymLink = (Get-Item $packagesDir).Attributes -band [System.IO.FileAttributes]::ReparsePoint
         if ([System.IO.FileAttributes]::ReparsePoint -ne $isSymLink) {
           Remove-Item $packagesDir -Rec -Force
         }
       }
-      New-Item $packagesDir -ItemType SymbolicLink -Target $NUGET_PACKAGES -Force | Out-Null
+      New-Item $packagesDir -ItemType SymbolicLink -Target $env:NUGET_PACKAGES -Force | Out-Null
     }
   }
 
@@ -249,12 +272,11 @@ end {
   Write-Verbose "End build for $dir"
 
   Write-Verbose ("Exiting with error level {0}" -f $script:errorlevel)
-  if ($errorCode -ne 0)
+  if ($script:errorLevel -ne 0)
   {
-    Write-Error "Build failed with error code: $errorCode"
+    Write-Error "Build failed with error code: $script:errorLevel"
   }
 
   Exit $script:errorlevel
 }
-
 

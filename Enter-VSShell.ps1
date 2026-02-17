@@ -1,7 +1,7 @@
 [CmdLetBinding()]
 param(
   [Parameter(Mandatory=$false)][String]$vsVersion = "Enterprise",
-  [Parameter(Mandatory=$false)][String]$vsYear = "2022",
+  [Parameter(Mandatory=$false)][String]$vsYear = "18",
   $vsWhere = "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe"
 )
 
@@ -62,7 +62,7 @@ if (($__platform) -eq 'Windows' -and (Test-Path $vsWhere)) {
     @($vsVersion, $vsYear),
     @('Insiders', '18'),
     @('Enterprise', '18'),
-    @('Profesional', '18'),
+    @('Professional', '18'),
     @('Enterprise', $vsYear),
     @('Preview', '2022'),
     @('Enterprise', '2022'),
