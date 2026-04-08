@@ -58,6 +58,25 @@ begin {
 
   function Test-IsGitRepo { ($null -ne (Get-RepoRoot)) }
 
+  function Test-SymLinks {
+    $testDir = [System.IO.Path]::GetTempPath()
+    $testLink = Join-Path $testDir "symlink-test-$PID"
+    $testTarget = Join-Path $testDir "symlink-target-$PID"
+    try {
+      New-Item -ItemType Directory -Path $testTarget -Force | Out-Null
+      New-Item -ItemType SymbolicLink -Path $testLink -Target $testTarget -ErrorAction Stop | Out-Null
+      return $true
+    } catch {
+      return $false
+    } finally {
+      Remove-Item -LiteralPath $testLink -Force -ErrorAction SilentlyContinue
+      Remove-Item -LiteralPath $testTarget -Force -ErrorAction SilentlyContinue
+    }
+  }
+
+  $script:canCreateSymLinks = Test-SymLinks
+  Write-Verbose "SymLink support: $script:canCreateSymLinks"
+
   Write-Verbose "Begin"
 
   Enter-VsShell | Write-Verbose
@@ -211,14 +230,28 @@ process {
       $packagesDir = Get-GlobalPackagesFolder -dir $dir
     }
     if (($null -ne $packagesDir) -and (Test-Path env:NUGET_PACKAGES)) {
-      Write-Verbose "SymLink $packagesDir -> ${env:NUGET_PACKAGES}"
-      if (Test-Path $packagesDir) {
-        $isSymLink = (Get-Item $packagesDir).Attributes -band [System.IO.FileAttributes]::ReparsePoint
+      $nugetPackagesTarget = $env:NUGET_PACKAGES
+    } elseif ($null -ne $packagesDir) {
+      $nugetPackagesTarget = "$env:USERPROFILE\.nuget\packages"
+    }
+    if ($null -ne $nugetPackagesTarget) {
+      Write-Verbose "SymLink $packagesDir -> $nugetPackagesTarget"
+      $existingItem = Get-Item -LiteralPath $packagesDir -Force -ErrorAction SilentlyContinue
+      if ($null -ne $existingItem) {
+        $isSymLink = $existingItem.Attributes -band [System.IO.FileAttributes]::ReparsePoint
         if ([System.IO.FileAttributes]::ReparsePoint -ne $isSymLink) {
+          # Real directory/file — remove it
           Remove-Item $packagesDir -Rec -Force
+        } else {
+          # Symlink (valid or broken) — remove so New-Item can replace it
+          Remove-Item -LiteralPath $packagesDir -Force
         }
       }
-      New-Item $packagesDir -ItemType SymbolicLink -Target $env:NUGET_PACKAGES -Force | Out-Null
+      if ($script:canCreateSymLinks) {
+        New-Item $packagesDir -ItemType SymbolicLink -Target $nugetPackagesTarget -Force | Out-Null
+      } else {
+        Write-Verbose "Skipping symlink for packages dir (symlinks not available on this machine)"
+      }
     }
   }
 

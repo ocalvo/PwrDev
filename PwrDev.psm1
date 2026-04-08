@@ -73,3 +73,8 @@ Export-ModuleMember -Alias Deploy-ProjectBuild
 set-alias dpb Deploy-ProjectBuild -scope global
 Export-ModuleMember -Alias dpb
 
+set-alias Confirm-DevMode $PSScriptRoot\Confirm-DevMode.ps1 -scope global
+Export-ModuleMember -Alias Confirm-DevMode
+
+set-alias Setup-DevMode $PSScriptRoot\Setup-DevMode.ps1 -scope global
+Export-ModuleMember -Alias Setup-DevMode
