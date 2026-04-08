@@ -8,7 +8,7 @@ param(
   [switch]$noConsoleLoger,
   [switch]$enableAutoResponse,
   [string]$Id = "",
-  $baseResultDir = (Join-Path ((Get-Location).Path) '.vs'),
+  $baseResultDir = $null,
   $Project = "auto",
   [string]$Target,
   [Parameter()]
@@ -54,6 +54,7 @@ begin {
       }
       $d
     }
+    $repoRoot
   }
 
   function Test-IsGitRepo { ($null -ne (Get-RepoRoot)) }
@@ -82,6 +83,10 @@ begin {
   Enter-VsShell | Write-Verbose
 
   $script:errorLevel = 0
+
+  if (-not $PSBoundParameters.ContainsKey('baseResultDir')) {
+    $baseResultDir = Join-Path (Get-RepoRoot) '.vs'
+  }
 
   if (-Not (Test-Path $baseResultDir)) {
     New-Item $baseResultDir -ItemType Directory | Out-Null
