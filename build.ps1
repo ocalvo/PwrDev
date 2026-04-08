@@ -234,7 +234,7 @@ process {
     } elseif ($null -ne $packagesDir) {
       $nugetPackagesTarget = "$env:USERPROFILE\.nuget\packages"
     }
-    if ($null -ne $nugetPackagesTarget) {
+    if (($null -ne $nugetPackagesTarget) -and $script:canCreateSymLinks) {
       Write-Verbose "SymLink $packagesDir -> $nugetPackagesTarget"
       $existingItem = Get-Item -LiteralPath $packagesDir -Force -ErrorAction SilentlyContinue
       if ($null -ne $existingItem) {
@@ -247,11 +247,9 @@ process {
           Remove-Item -LiteralPath $packagesDir -Force
         }
       }
-      if ($script:canCreateSymLinks) {
-        New-Item $packagesDir -ItemType SymbolicLink -Target $nugetPackagesTarget -Force | Out-Null
-      } else {
-        Write-Verbose "Skipping symlink for packages dir (symlinks not available on this machine)"
-      }
+      New-Item $packagesDir -ItemType SymbolicLink -Target $nugetPackagesTarget -Force | Out-Null
+    } elseif ($null -ne $nugetPackagesTarget) {
+      Write-Verbose "Skipping symlink for packages dir (symlinks not available on this machine)"
     }
   }
 
