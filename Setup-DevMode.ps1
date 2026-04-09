@@ -43,4 +43,4 @@ Set-ItemProperty -Path $registryPath -Name AllowDevelopmentWithoutDevLicense -Va
 Write-Host "Developer Mode enabled." -ForegroundColor Green
 Write-Host ""
 Write-Host "Developers can now create symbolic links without administrator privileges."
-Write-Host "No reboot required — takes effect immediately for new processes."
+Write-Host "No reboot required - takes effect immediately for new processes."

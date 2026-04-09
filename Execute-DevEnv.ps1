@@ -18,7 +18,7 @@ process {
   Write-Verbose "Removing PwrDev Aliases that are not needed in DevShell"
   $global:_pwrdev_aliases | ForEach-Object {
     $aliasName = $_
-    Remove-Alias -Name $aliasName -scope global
+    Remove-Item -Path "Alias:$aliasName" -Force -ErrorAction SilentlyContinue
   }
   $global:_pwrdev_aliases = @()
 }

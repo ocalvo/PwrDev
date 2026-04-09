@@ -119,7 +119,7 @@ begin {
     Write-Verbose "Setting platform:$Platform"
     $hasCpp = Get-ChildItem *.vcxproj -File -Recurse -Depth 3 | Select-Object -First 1
     if ($hasCpp) {
-      $Platform = $hasCpp ? $env:PROCESSOR_ARCHITECTURE : "AnyCPU"
+      $Platform = if ($hasCpp) { $env:PROCESSOR_ARCHITECTURE } else { "AnyCPU" }
       if ($Platform -eq "AMD64") { $Platform = "X64" }
     }
   }
@@ -215,7 +215,7 @@ process {
 
   $hasCppPackages = $false
   if ($projectItem.Extension.StartsWith(".sln")) {
-    $firstConfigFile = Get-ChildItem packages.config -Path $dir -File -Recurse -Depth 4 -FollowSymlink:$false | Select-Object -First 1
+    $firstConfigFile = Get-ChildItem packages.config -Path $dir -File -Recurse -Depth 4 | Select-Object -First 1
     $hasCppPackages = $null -ne $firstConfigFile
     if ($hasCppPackages) {
       $packagesDir = Join-Path $dir 'packages'
@@ -233,10 +233,10 @@ process {
       if ($null -ne $existingItem) {
         $isSymLink = $existingItem.Attributes -band [System.IO.FileAttributes]::ReparsePoint
         if ([System.IO.FileAttributes]::ReparsePoint -ne $isSymLink) {
-          # Real directory/file — remove it
+          # Real directory/file - remove it
           Remove-Item $packagesDir -Rec -Force
         } else {
-          # Symlink (valid or broken) — remove so New-Item can replace it
+          # Symlink (valid or broken) - remove so New-Item can replace it
           Remove-Item -LiteralPath $packagesDir -Force
         }
       }
@@ -271,7 +271,7 @@ end {
       $message,
       $file)
 
-    $esc = "`e"  # PowerShell escape for ASCII 27
+    $esc = [char]27  # Escape character (ESC), compatible with PS5.1+
     $sequence = "${esc}]8;;$file`a$message${esc}]8;;`a"
     Write-Host $sequence
   }
