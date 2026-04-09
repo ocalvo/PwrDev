@@ -45,18 +45,6 @@ param(
 )
 
 begin {
-  function Get-RepoRoot {
-    param($marker = '.git')
-    $repoRoot = Get-Item -Path . -Force | ForEach-Object {
-      $d = $_.FullName
-      while ($d -and -not (Test-Path (Join-Path $d $marker))) {
-        $d = Split-Path $d -Parent
-      }
-      $d
-    }
-    $repoRoot
-  }
-
   function Test-IsGitRepo { ($null -ne (Get-RepoRoot)) }
 
   function Test-SymLinks {

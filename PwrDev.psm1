@@ -1,6 +1,12 @@
 
+set-alias Get-RepoRoot $PSScriptRoot\Get-RepoRoot.ps1 -scope global
+Export-ModuleMember -Alias Get-RepoRoot
+
 set-alias Get-BuildErrors $PSScriptRoot\Get-BuildErrors.ps1 -scope global
 Export-ModuleMember -Alias Get-BuildErrors
+
+set-alias Open-LastBinLog $PSScriptRoot\Open-LastBinLog.ps1 -scope global
+Export-ModuleMember -Alias Open-LastBinLog
 
 function global:Open-Editor($fileName,$lineNumber)
 {
