@@ -88,6 +88,9 @@ if (($__platform) -eq 'Windows' -and (Test-Path $vsWhere)) {
   Import-Module $devShellModule
   $vsVerPath = $ver.Path
   Write-Verbose "Loading VS Shell from $vsVerPath"
+  $vsInstallerDir = Split-Path $vsWhere -Parent
+  $env:PATH = "$vsInstallerDir$([IO.Path]::PathSeparator)$env:PATH"
+  Write-Verbose "Temporarily added $vsInstallerDir to PATH for devshell init"
   Enter-VsDevShell -VsInstallPath $vsVerPath -SkipAutomaticLocation | Write-Verbose
 
   Write-Host "DevShell:${env:VSCMD_VER}"
