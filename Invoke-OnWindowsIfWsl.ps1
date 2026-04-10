@@ -1,4 +1,4 @@
-function Invoke-OnWindowsIfWsl {
+﻿function Invoke-OnWindowsIfWsl {
     <#
     .SYNOPSIS
         When called from inside WSL, transparently re-invokes the caller on the Windows side.
