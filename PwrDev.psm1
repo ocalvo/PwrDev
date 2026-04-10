@@ -8,33 +8,6 @@ Export-ModuleMember -Alias Get-BuildErrors
 set-alias Open-LastBinLog $PSScriptRoot\Open-LastBinLog.ps1 -scope global
 Export-ModuleMember -Alias Open-LastBinLog
 
-function global:Open-Editor($fileName,$lineNumber)
-{
-  if ("vscode" -eq $env:TERM_PROGRAM)
-  {
-    $codeParam = ($fileName+":"+$lineNumber)
-    code --goto $codeParam
-    return
-  }
-
-  $vimPath = (get-command vim.exe -ErrorAction Ignore)
-  if ($null -ne $vimPath)
-  {
-    .$vimPath -y $fileName ("+"+$lineNumber)
-    return
-  }
-
-  if ($null -ne $env:SDEDITOR)
-  {
-    .$env:SDEDITOR $fileName
-    return
-  }
-
-  Write-Warning "No editor found, falling back to notepad"
-  .notepad $fileName
-}
-Export-ModuleMember -Function Open-Editor
-
 if ("Core" -eq $PSEdition) {
   $env:__PSShell = "pwsh.exe"
   $env:__PSShellDir = "PowerShell"
@@ -46,7 +19,7 @@ else {
 
 function global:Edit-BuildErrors($first=1,$skip=0)
 {
-  Get-BuildErrors | Select-Object -First $first -Skip $skip |ForEach-Object { Open-Editor $_.Item1 $_.Item2 }
+  Get-BuildErrors | Select-Object -First $first -Skip $skip |ForEach-Object { Edit-File $_.Item1 $_.Item2 }
 }
 Export-ModuleMember -Function Edit-BuildErrors
 
@@ -84,3 +57,8 @@ Export-ModuleMember -Alias Confirm-DevMode
 
 set-alias Setup-DevMode $PSScriptRoot\Setup-DevMode.ps1 -scope global
 Export-ModuleMember -Alias Setup-DevMode
+
+set-alias Edit-File $PSScriptRoot\Edit-File.ps1 -scope global
+Export-ModuleMember -Alias Edit-File
+set-alias edit Edit-File -scope global
+Export-ModuleMember -Alias edit
