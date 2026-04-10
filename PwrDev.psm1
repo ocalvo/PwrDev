@@ -19,7 +19,7 @@ else {
 
 function global:Edit-BuildErrors($first=1,$skip=0)
 {
-  Get-BuildErrors | Select-Object -First $first -Skip $skip |ForEach-Object { Edit-File $_.Item1 $_.Item2 }
+  Get-BuildErrors | Select-Object -First $first -Skip $skip |ForEach-Object { Edit-File $_.File $_.LineNumber }
 }
 Export-ModuleMember -Function Edit-BuildErrors
 
