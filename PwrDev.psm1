@@ -2,6 +2,9 @@
 set-alias Get-RepoRoot $PSScriptRoot\Get-RepoRoot.ps1 -scope global
 Export-ModuleMember -Alias Get-RepoRoot
 
+. $PSScriptRoot\Invoke-OnWindowsIfWsl.ps1
+Export-ModuleMember -Function Invoke-OnWindowsIfWsl
+
 set-alias Get-BuildErrors $PSScriptRoot\Get-BuildErrors.ps1 -scope global
 Export-ModuleMember -Alias Get-BuildErrors
 

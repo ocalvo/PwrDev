@@ -39,6 +39,13 @@ param(
   [switch]$Clean)
 
 begin {
+  # Deploy always requires Windows tooling (appx recipe, deployapprecipe.exe).
+  # Re-run on the Windows side if invoked from WSL.
+  Invoke-OnWindowsIfWsl -ScriptPath $MyInvocation.MyCommand.Path -BoundParameters $PSBoundParameters
+
+  # Verify Developer Mode is enabled (required for symlinks and sideload deployment).
+  Confirm-DevMode
+
   $finalTarget = ($Target -f $UserParam01)
   Write-Verbose "Final Target: $finalTarget"
   $PlatForRecipe = $Platform

@@ -68,6 +68,13 @@ begin {
 
   Write-Verbose "Begin"
 
+  # If running inside WSL and the repo contains C++ projects, re-run on the Windows side.
+  if ($env:WSL_DISTRO_NAME) {
+    if (Get-ChildItem *.vcxproj -File -Recurse -Depth 3 | Select-Object -First 1) {
+      Invoke-OnWindowsIfWsl -ScriptPath $MyInvocation.MyCommand.Path -BoundParameters $PSBoundParameters
+    }
+  }
+
   Enter-VsShell | Write-Verbose
 
   $script:errorLevel = 0
