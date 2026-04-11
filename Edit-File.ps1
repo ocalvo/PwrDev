@@ -21,13 +21,6 @@ function Test-IsVisualStudioTerminal {
   return $false
 }
 
-function Test-IsClaudeTerminal {
-  try {
-    $parent = (Get-Process -Id $PID).Parent
-    return ($null -ne $parent -and $parent.ProcessName -eq 'claude')
-  } catch {}
-  return $false
-}
 
 # Marshal.GetActiveObject was removed in .NET Core - use oleaut32 P/Invoke instead
 if (-not ([System.Management.Automation.PSTypeName]'ComHelper').Type) {
@@ -57,7 +50,30 @@ if ($null -ne $resolvedPath) {
 }
 Write-Verbose "FilePath: $FilePath, LineNumber: $LineNumber"
 
-# 1. Visual Studio integrated terminal
+# 1. Running inside a Claude Code session, or stdin is redirected (piped/CI) -
+# launch editor in a new window so it can attach to its own terminal.
+# Checked first - cheap, and avoids unnecessary CIM queries below.
+if ($env:CLAUDE_CODE_ACTIVE -eq '1' -or [Console]::IsInputRedirected) {
+  Write-Verbose "Terminal: Claude / redirected stdin - launching editor in new window via Start-Process"
+  $vimPath = Get-Command vim.exe -CommandType Application -ErrorAction Ignore
+  if ($null -ne $vimPath) {
+    $editorArgs = if ($LineNumber -gt 0) { @($FilePath, "+$LineNumber") } else { @($FilePath) }
+    Write-Verbose "Using vim.exe ($($vimPath.Source)) args: $editorArgs"
+    Start-Process -FilePath $vimPath.Source -ArgumentList $editorArgs
+    return
+  }
+  $editPath = Get-Command edit.exe -CommandType Application -ErrorAction Ignore
+  if ($null -ne $editPath) {
+    $editorArgs = if ($LineNumber -gt 0) { @($FilePath, $LineNumber) } else { @($FilePath) }
+    Write-Verbose "Using edit.exe ($($editPath.Source)) args: $editorArgs"
+    Start-Process -FilePath $editPath.Source -ArgumentList $editorArgs
+    return
+  }
+  Write-Warning "No editor found. Install edit.exe or vim.exe to open files from the terminal."
+  return
+}
+
+# 2. Visual Studio integrated terminal (requires CIM query to walk process tree)
 if (Test-IsVisualStudioTerminal) {
   Write-Verbose "Terminal: Visual Studio (DevHub parent) - using DTE"
   $dteProgIds = @("VisualStudio.DTE.18.0", "VisualStudio.DTE.17.0", "VisualStudio.DTE.16.0", "VisualStudio.DTE.15.0", "VisualStudio.DTE")
@@ -92,32 +108,11 @@ if (Test-IsVisualStudioTerminal) {
   return
 }
 
-# 2. VS Code terminal (checked after VS - both set TERM_PROGRAM=vscode)
+# 3. VS Code terminal
 if ($env:TERM_PROGRAM -eq "vscode") {
   $gotoParam = if ($LineNumber -gt 0) { "${FilePath}:${LineNumber}" } else { $FilePath }
   Write-Verbose "Terminal: VS Code - code --goto $gotoParam"
   code --goto $gotoParam
-  return
-}
-
-# 3. Claude terminal - claude.exe owns stdin/stdout so launch editor in a new window
-if (Test-IsClaudeTerminal) {
-  Write-Verbose "Terminal: Claude - launching editor in new window via Start-Process"
-  $vimPath = Get-Command vim.exe -CommandType Application -ErrorAction Ignore
-  if ($null -ne $vimPath) {
-    $editorArgs = if ($LineNumber -gt 0) { @($FilePath, "+$LineNumber") } else { @($FilePath) }
-    Write-Verbose "Using vim.exe ($($vimPath.Source)) args: $editorArgs"
-    Start-Process -FilePath $vimPath.Source -ArgumentList $editorArgs
-    return
-  }
-  $editPath = Get-Command edit.exe -CommandType Application -ErrorAction Ignore
-  if ($null -ne $editPath) {
-    $editorArgs = if ($LineNumber -gt 0) { @($FilePath, $LineNumber) } else { @($FilePath) }
-    Write-Verbose "Using edit.exe ($($editPath.Source)) args: $editorArgs"
-    Start-Process -FilePath $editPath.Source -ArgumentList $editorArgs
-    return
-  }
-  Write-Warning "No editor found. Install edit.exe or vim.exe to open files from the terminal."
   return
 }
 
