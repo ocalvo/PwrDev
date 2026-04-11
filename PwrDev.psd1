@@ -12,7 +12,7 @@
 RootModule = 'PwrDev.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.0.21'
+ModuleVersion = '1.0.23'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -113,6 +113,9 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = 'See full history: https://github.com/ocalvo/PwrDev/blob/main/CHANGELOG.md
+
+## [1.0.23]
+- Renamed build.ps1 to Invoke-BuildTool.ps1 (build alias unchanged)
 
 ## [1.0.20]
 - Added Get-RepoRoot, Open-LastBinLog, Confirm-DevMode, Setup-DevMode, test-build

@@ -3,6 +3,11 @@
 All notable changes to this project will be documented in this file.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.0.23] - 2026-04-11
+
+### Changed
+- Renamed `build.ps1` to `Invoke-BuildTool.ps1` in preparation for supporting additional build systems (clang, xcode, gcc, make, nmake, etc.); `build` alias unchanged
+
 ## [1.0.20] - 2026-04-11
 
 ### Added

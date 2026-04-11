@@ -32,7 +32,7 @@ Export-ModuleMember -Alias goerror
 set-alias Enter-VsShell $PSScriptRoot\Enter-VsShell.ps1 -scope global
 Export-ModuleMember -Alias Enter-VsShell
 
-set-alias build $PSScriptRoot\Build.ps1 -scope global
+set-alias build $PSScriptRoot\Invoke-BuildTool.ps1 -scope global
 Export-ModuleMember -Alias build
 
 set-alias test-build $PSScriptRoot\Test-Build.ps1 -scope global
