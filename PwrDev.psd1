@@ -12,7 +12,7 @@
 RootModule = 'PwrDev.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.0.20'
+ModuleVersion = '1.0.21'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -94,6 +94,9 @@ AliasesToExport = 'goerror', 'build', 'dpb', 'Deploy-ProjectBuild', 'Enter-VsShe
 # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
 PrivateData = @{
 
+    #PublishRepository of this module
+    PublishRepository = 'PSFeed'
+
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
@@ -128,7 +131,7 @@ PrivateData = @{
 
     } # End of PSData hashtable
 
- } # End of PrivateData hashtable
+} # End of PrivateData hashtable
 
 # HelpInfo URI of this module
 HelpInfoURI = 'https://github.com/ocalvo/PwrDev'
