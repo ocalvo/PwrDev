@@ -72,6 +72,13 @@
 
     # Re-invoke on the Windows side: import PwrDev, set working directory, run the script.
     # Extra arguments passed after a -Command string are available as $args inside the command.
-    & $ps.Source -NoProfile -Command "$importCmd; Set-Location '$winDir'; & '$winScript' @args" @passArgs
+    # Wrap in try/catch to suppress the automatic terminating error that PS 7.4+ raises when a
+    # native command exits with a non-zero code (PSNativeCommandUseErrorActionPreference).
+    # Flow control is driven solely by $LASTEXITCODE.
+    try {
+        & $ps.Source -NoProfile -Command "$importCmd; Set-Location '$winDir'; & '$winScript' @args" @passArgs
+    } catch {
+        # Intentionally empty: swallow auto-generated NativeCommandExitException from PS 7.4+.
+    }
     exit $LASTEXITCODE
 }
