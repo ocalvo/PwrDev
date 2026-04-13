@@ -55,21 +55,21 @@ Write-Verbose "FilePath: $FilePath, LineNumber: $LineNumber"
 # Checked first - cheap, and avoids unnecessary CIM queries below.
 if ($env:CLAUDE_CODE_ACTIVE -eq '1' -or [Console]::IsInputRedirected) {
   Write-Verbose "Terminal: Claude / redirected stdin - launching editor in new window via Start-Process"
-  $vimPath = Get-Command vim.exe -CommandType Application -ErrorAction Ignore
+  $vimPath = Get-Command vim -CommandType Application -ErrorAction Ignore
   if ($null -ne $vimPath) {
     $editorArgs = if ($LineNumber -gt 0) { @($FilePath, "+$LineNumber") } else { @($FilePath) }
-    Write-Verbose "Using vim.exe ($($vimPath.Source)) args: $editorArgs"
+    Write-Verbose "Using vim ($($vimPath.Source)) args: $editorArgs"
     Start-Process -FilePath $vimPath.Source -ArgumentList $editorArgs
     return
   }
-  $editPath = Get-Command edit.exe -CommandType Application -ErrorAction Ignore
+  $editPath = Get-Command edit -CommandType Application -ErrorAction Ignore
   if ($null -ne $editPath) {
     $editorArgs = if ($LineNumber -gt 0) { @($FilePath, $LineNumber) } else { @($FilePath) }
-    Write-Verbose "Using edit.exe ($($editPath.Source)) args: $editorArgs"
+    Write-Verbose "Using edit ($($editPath.Source)) args: $editorArgs"
     Start-Process -FilePath $editPath.Source -ArgumentList $editorArgs
     return
   }
-  Write-Warning "No editor found. Install edit.exe or vim.exe to open files from the terminal."
+  Write-Warning "No editor found. Install edit or vim to open files from the terminal."
   return
 }
 
@@ -116,10 +116,10 @@ if ($env:TERM_PROGRAM -eq "vscode") {
   return
 }
 
-# 4. Other terminals: vim.exe, then edit.exe
-$vimPath = Get-Command vim.exe -CommandType Application -ErrorAction Ignore
+# 4. Other terminals: vim, then edit
+$vimPath = Get-Command vim -CommandType Application -ErrorAction Ignore
 if ($null -ne $vimPath) {
-  Write-Verbose "Terminal: other - using vim.exe ($($vimPath.Source))"
+  Write-Verbose "Terminal: other - using vim ($($vimPath.Source))"
   if ($LineNumber -gt 0) {
     & $vimPath.Source $FilePath ("+$LineNumber")
   } else {
@@ -128,9 +128,9 @@ if ($null -ne $vimPath) {
   return
 }
 
-$editPath = Get-Command edit.exe -CommandType Application -ErrorAction Ignore
+$editPath = Get-Command edit -CommandType Application -ErrorAction Ignore
 if ($null -ne $editPath) {
-  Write-Verbose "Terminal: other - using edit.exe ($($editPath.Source))"
+  Write-Verbose "Terminal: other - using edit ($($editPath.Source))"
   if ($LineNumber -gt 0) {
     & $editPath.Source $FilePath $LineNumber
   } else {
@@ -139,4 +139,4 @@ if ($null -ne $editPath) {
   return
 }
 
-Write-Warning "No editor found. Install edit.exe or vim.exe to open files from the terminal."
+Write-Warning "No editor found. Install edit or vim to open files from the terminal."

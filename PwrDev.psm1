@@ -63,5 +63,5 @@ Export-ModuleMember -Alias Setup-DevMode
 
 set-alias Edit-File $PSScriptRoot\Edit-File.ps1 -scope global
 Export-ModuleMember -Alias Edit-File
-set-alias edit Edit-File -scope global
-Export-ModuleMember -Alias edit
+set-alias ef Edit-File -scope global
+Export-ModuleMember -Alias ef
