@@ -89,7 +89,7 @@ AliasesToExport = 'goerror', 'build', 'dpb', 'Deploy-ProjectBuild', 'Enter-VsShe
 # ModuleList = @()
 
 # List of all files packaged with this module
-FileList = @('CLAUDE.md')
+FileList = @('CLAUDE.md', 'CHANGELOG.md')
 
 # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
 PrivateData = @{
