@@ -12,7 +12,7 @@
 RootModule = 'PwrDev.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.0.34'
+ModuleVersion = '1.0.36'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
