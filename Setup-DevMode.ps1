@@ -5,7 +5,7 @@
 # Must be run once as Administrator:
 #   pwsh.exe -NoProfile -ExecutionPolicy Bypass -File Setup-DevMode.ps1
 # Or via the convenience wrapper:
-#   iTunes\Scripts\setup-devmode.cmd
+#   setup-devmode.cmd
 
 [CmdletBinding()]
 param()
@@ -22,7 +22,7 @@ if (-not (Test-Admin)) {
     Write-Host "ERROR: This script must be run as Administrator." -ForegroundColor Red
     Write-Host ""
     Write-Host "Re-launch from an elevated prompt, or run:"
-    Write-Host "  iTunes\Scripts\setup-devmode.cmd"
+    Write-Host "  setup-devmode.cmd"
     exit 1
 }
 
