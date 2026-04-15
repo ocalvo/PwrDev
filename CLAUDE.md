@@ -86,3 +86,48 @@ dpb -UserParam01 TV -Target "Apps\TV\TVPackage" -Configuration Debug -Platform x
 | VS Code | `code --goto file:line` |
 | Claude Code | `Start-Process vim.exe` (new window) |
 | Other | `vim.exe` inline |
+
+## Branch and PR Policy (release-please)
+
+**Never commit directly to `main`.** All changes must go through a feature branch and pull request. This repo uses [release-please](https://github.com/googleapis/release-please) to automate versioning and changelog generation from merged PR titles.
+
+1. `git checkout -b <short-slug>` — e.g. `feat/build-arm64`, `fix/vsshell-path`.
+2. Commit on that branch.
+3. `gh pr create --title "<type>: <description>" --body "..."` — use `--base main`.
+4. Squash-merge; GitHub uses the PR title as the commit subject, which release-please parses.
+5. Release-please opens/updates a release PR bumping `PwrDev.psd1` and `CHANGELOG.md`. Merge that to publish.
+
+**PR titles must follow [Conventional Commits](https://www.conventionalcommits.org/):**
+
+```
+<type>[optional scope][!]: <short description>
+```
+
+| Type | Version bump | Use for |
+|------|--------------|---------|
+| `feat` | minor (`1.2.3` → `1.3.0`) | New features, new commands, new parameters |
+| `fix` | patch (`1.2.3` → `1.2.4`) | Bug fixes |
+| `feat!` / `fix!` / `BREAKING CHANGE:` footer | major (`1.2.3` → `2.0.0`) | Breaking API or behavior changes |
+| `perf` | patch | Performance improvements |
+| `refactor` | patch | Internal restructuring, no behavior change |
+| `docs` | no release | Documentation-only (README, CLAUDE.md) |
+| `chore` | no release | Housekeeping, deps, formatting |
+| `ci` | no release | CI/CD config |
+| `test` | no release | Test-only changes |
+
+Examples:
+
+```
+feat(build): add -Incremental switch to build command
+fix(dpb): correct appx recipe path for ARM64ec
+perf(Enter-VsShell): cache developer shell detection
+feat!: rename Deploy-ProjectBuild to Publish-AppxBuild
+docs: update CLAUDE.md with WSL behavior notes
+```
+
+Rules:
+- **Imperative mood** ("add", "fix", "remove" — not "added", "fixes").
+- Under 72 characters.
+- No generic messages ("update files", "misc changes").
+- Split unrelated changes into separate PRs.
+- If a PR title doesn't match the grammar, release-please silently ignores it.
