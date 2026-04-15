@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.0.49](https://github.com/ocalvo/PwrDev/compare/v1.0.48...v1.0.49) (2026-04-15)
+
+
+### Bug Fixes
+
+* remove internal company path references from Setup-DevMode.ps1 ([8f79e44](https://github.com/ocalvo/PwrDev/commit/8f79e44a0a940360fc48be221beec717c7a53237))
+* remove internal company path references from Setup-DevMode.ps1 ([e17a295](https://github.com/ocalvo/PwrDev/commit/e17a2959521ac904f3ccb5c545c0bdb84f8b4760))
+
 ## [1.0.23] - 2026-04-11
 
 ### Changed
