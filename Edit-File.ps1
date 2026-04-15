@@ -7,6 +7,14 @@ param(
   [int]$LineNumber = 0
 )
 
+# SENSITIVE: This file has been extensively tested across three terminal contexts:
+#   1. Visual Studio terminal (devenv ancestor) → DTE opens file in running VS instance
+#   2. Claude Code / redirected stdin           → vim launched in new window via Start-Process
+#   3. Plain terminal                           → vim runs inline
+#
+# The terminal detection logic is fragile and must be tested in ALL three contexts
+# before committing any change. Do not modify detection heuristics without testing.
+
 # Marshal.GetActiveObject was removed in .NET Core - use oleaut32 P/Invoke instead
 if (-not ([System.Management.Automation.PSTypeName]'ComHelper').Type) {
   Add-Type -TypeDefinition @'
@@ -37,7 +45,7 @@ function Test-IsVisualStudioTerminal {
       $proc = $proc.Parent
       if ($null -eq $proc) { break }
       Write-Verbose "Checking ancestor process: $($proc.ProcessName)"
-      if ($proc.ProcessName -eq 'DevHub') { return $true }
+      if ($proc.ProcessName -eq 'DevHub' -or $proc.ProcessName -eq 'devenv') { return $true }
     }
   } catch {}
   return $false
