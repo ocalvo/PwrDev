@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.0.50](https://github.com/ocalvo/PwrDev/compare/v1.0.49...v1.0.50) (2026-04-15)
+
+
+### Bug Fixes
+
+* **ci:** harden publish job with tag checkout, API key guard, and manifest validation ([5d941db](https://github.com/ocalvo/PwrDev/commit/5d941dbeb21d53734524e2a9ef32f34552ac63df))
+* **ci:** harden publish job with tag checkout, API key guard, and manifest validation ([65a0d51](https://github.com/ocalvo/PwrDev/commit/65a0d5194ff7c3a1913a10c2625e49710b398d1f))
+* **module:** export missing aliases and remove stale function references ([9f35657](https://github.com/ocalvo/PwrDev/commit/9f356577b5adaaf8c569456a0ce1e6ce1c090161))
+
 ## [1.0.49](https://github.com/ocalvo/PwrDev/compare/v1.0.48...v1.0.49) (2026-04-15)
 
 
