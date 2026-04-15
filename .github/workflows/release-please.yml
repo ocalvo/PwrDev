@@ -29,6 +29,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.release-please.outputs.tag_name }}
+
+      - name: Validate API key
+        shell: pwsh
+        env:
+          PSGALLERY_API_KEY: ${{ secrets.PSGALLERY_API_KEY }}
+        run: |
+          if (-not $env:PSGALLERY_API_KEY) {
+            throw 'PSGALLERY_API_KEY secret is not set. Configure it in repository Settings → Secrets.'
+          }
+
+      - name: Validate module manifest
+        shell: pwsh
+        run: |
+          Test-ModuleManifest -Path ./PwrDev.psd1 -Verbose
 
       - name: Publish to PSGallery
         shell: pwsh
