@@ -20,7 +20,7 @@ This module's source files are in `$_.ModuleBase` (e.g. `Modules\PwrDev\`). Key 
 | `Enter-VsShell` | Initialize Visual Studio developer shell |
 | `goerror` / `Edit-BuildErrors` | Open build error(s) in editor |
 | `Get-BuildErrors` | List build errors as objects |
-| `edit` / `Edit-File` | Open file at line in terminal-aware editor |
+| `ef` / `Edit-File` | Open file at line in terminal-aware editor |
 | `Get-RepoRoot` | Find the git repository root |
 | `Confirm-DevMode` | Check Windows Developer Mode status |
 | `Setup-DevMode` | Enable Windows Developer Mode (admin) |
@@ -56,7 +56,7 @@ goerror
 goerror -first 2 -skip 1
 
 # Open a file at a line
-edit src\foo.cpp 42
+ef src\foo.cpp 42
 ```
 
 ## Environment Variables
@@ -96,12 +96,19 @@ dpb -Configuration Release 2>&1 | Out-String
 
 ## Editor Behavior (`Edit-File`)
 
-| Terminal | Editor used |
-|----------|-------------|
-| Visual Studio (DevHub) | VS DTE — opens in running VS instance |
-| VS Code | `code --goto file:line` |
-| Claude Code | `Start-Process vim.exe` (new window) |
-| Other | `vim.exe` inline |
+**SENSITIVE — do not modify `Edit-File.ps1` without testing all three terminal contexts:**
+1. **Visual Studio terminal** (Claude Code running inside VS) → must open in VS via DTE
+2. **Claude Code with redirected stdin** (standalone Claude Code, VS running in background) → must open vim in a new window
+3. **Plain terminal** (PowerShell, Windows Terminal, no VS) → must open vim inline
+
+This file has broken multiple times. Always test all three cases before committing any change.
+
+| Priority | Condition | Editor used |
+|----------|-----------|-------------|
+| 1 | `devenv` or `DevHub` in ancestor process tree | VS DTE — opens in running VS instance |
+| 2 | stdin redirected (`[Console]::IsInputRedirected`) | `Start-Process vim.exe` (new window) |
+| 3 | `$env:TERM_PROGRAM -eq "vscode"` | `code --goto file:line` |
+| 4 | Other | `vim.exe` inline |
 
 ## Branch and PR Policy (release-please)
 
