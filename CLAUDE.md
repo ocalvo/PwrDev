@@ -72,6 +72,22 @@ $env:BUILD_APPX_RECIPE     = ".\BuildResults\{0}-{1}\{2}Package\bin\{2}Package\{
 dpb -UserParam01 TV -Target "Apps\TV\TVPackage" -Configuration Debug -Platform x64
 ```
 
+## Invoking Build Commands
+
+**Never pipe `build`, `dpb`, or any PwrDev build command through `| Out-String` or `2>&1 | Out-String`.**
+
+These commands use MSBuild's terminal logger (`-tl`) which writes live output directly to the terminal. Piping through `Out-String` breaks that output. Run them bare:
+
+```powershell
+# CORRECT
+build
+dpb -Configuration Release
+
+# WRONG — breaks terminal logger output
+build 2>&1 | Out-String
+dpb -Configuration Release 2>&1 | Out-String
+```
+
 ## WSL Behavior
 
 - `build` auto-detects C++ projects (`.vcxproj`) and re-invokes on Windows from WSL.
