@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.0.51](https://github.com/ocalvo/PwrDev/compare/v1.0.50...v1.0.51) (2026-04-15)
+
+
+### Bug Fixes
+
+* **Edit-File:** detect devenv ancestor for VS terminal, add sensitive marker ([#13](https://github.com/ocalvo/PwrDev/issues/13)) ([d4bef0d](https://github.com/ocalvo/PwrDev/commit/d4bef0d138f76fd11462696096f648afae5095b3))
+
 ## [1.0.50](https://github.com/ocalvo/PwrDev/compare/v1.0.49...v1.0.50) (2026-04-15)
 
 
