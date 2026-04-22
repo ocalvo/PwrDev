@@ -105,15 +105,36 @@ if ($env:TERM_PROGRAM -eq "vscode") {
   return
 }
 
+# Helper: locate vim.exe — checks PATH first, then common Windows install locations.
+function Find-VimExe {
+  $cmd = Get-Command vim -CommandType Application -ErrorAction Ignore
+  if ($null -ne $cmd) { return $cmd.Source }
+  $candidates = @(
+    "$env:ProgramFiles\Vim\vim*\vim.exe",
+    "${env:ProgramFiles(x86)}\Vim\vim*\vim.exe",
+    "$env:ProgramData\chocolatey\bin\vim.exe",
+    "$env:LOCALAPPDATA\Programs\vim\vim.exe",
+    "$env:LOCALAPPDATA\Microsoft\WinGet\Packages\*vim*\vim.exe"
+  )
+  foreach ($pattern in $candidates) {
+    $found = Resolve-Path $pattern -ErrorAction Ignore | Select-Object -Last 1
+    if ($null -ne $found) {
+      Write-Verbose "Found vim at: $($found.Path)"
+      return $found.Path
+    }
+  }
+  return $null
+}
+
 # 3. Stdin is redirected (piped/CI or terminal owned by another process) -
 # launch editor in a new window so it can attach to its own terminal.
 if ([Console]::IsInputRedirected) {
   Write-Verbose "stdin redirected - launching editor in new window via Start-Process"
-  $vimPath = Get-Command vim -CommandType Application -ErrorAction Ignore
-  if ($null -ne $vimPath) {
+  $vimExe = Find-VimExe
+  if ($null -ne $vimExe) {
     $editorArgs = if ($LineNumber -gt 0) { @($FilePath, "+$LineNumber") } else { @($FilePath) }
-    Write-Verbose "Using vim ($($vimPath.Source)) args: $editorArgs"
-    Start-Process -FilePath $vimPath.Source -ArgumentList $editorArgs
+    Write-Verbose "Using vim ($vimExe) args: $editorArgs"
+    Start-Process -FilePath $vimExe -ArgumentList $editorArgs
     return
   }
   Write-Warning "No editor found. Install vim to open files from the terminal."
@@ -121,13 +142,13 @@ if ([Console]::IsInputRedirected) {
 }
 
 # 4. Other terminals: vim inline
-$vimPath = Get-Command vim -CommandType Application -ErrorAction Ignore
-if ($null -ne $vimPath) {
-  Write-Verbose "Terminal: other - using vim ($($vimPath.Source))"
+$vimExe = Find-VimExe
+if ($null -ne $vimExe) {
+  Write-Verbose "Terminal: other - using vim ($vimExe)"
   if ($LineNumber -gt 0) {
-    & $vimPath.Source $FilePath ("+$LineNumber")
+    & $vimExe $FilePath ("+$LineNumber")
   } else {
-    & $vimPath.Source $FilePath
+    & $vimExe $FilePath
   }
   return
 }
