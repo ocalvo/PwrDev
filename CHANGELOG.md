@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.0.52](https://github.com/ocalvo/PwrDev/compare/v1.0.51...v1.0.52) (2026-04-22)
+
+
+### Bug Fixes
+
+* **ef:** find vim in known install paths when not on PATH ([#15](https://github.com/ocalvo/PwrDev/issues/15)) ([2615dcf](https://github.com/ocalvo/PwrDev/commit/2615dcf704c59a8ab96a520d2f796aa8794881b3))
+
 ## [1.0.51](https://github.com/ocalvo/PwrDev/compare/v1.0.50...v1.0.51) (2026-04-15)
 
 
