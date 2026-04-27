@@ -107,7 +107,7 @@ if ($env:TERM_PROGRAM -eq "vscode") {
 
 # Helper: locate vim.exe — checks PATH first, then common Windows install locations.
 function Find-VimExe {
-  $cmd = Get-Command vim -CommandType Application -ErrorAction Ignore
+  $cmd = Get-Command vim -CommandType Application -ErrorAction Ignore | Select-Object -First 1
   if ($null -ne $cmd) { return $cmd.Source }
   $candidates = @(
     "$env:ProgramFiles\Vim\vim*\vim.exe",
