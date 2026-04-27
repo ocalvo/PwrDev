@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.0.53](https://github.com/ocalvo/PwrDev/compare/v1.0.52...v1.0.53) (2026-04-27)
+
+
+### Bug Fixes
+
+* **ef:** pipe Get-Command vim through Select-Object -First 1 ([c6fe0c2](https://github.com/ocalvo/PwrDev/commit/c6fe0c2209c46d96b7cf23d34ab3bb123e9008ea))
+* **ef:** pipe Get-Command vim through Select-Object -First 1 ([04a6a50](https://github.com/ocalvo/PwrDev/commit/04a6a50f908d6f27a549dafbe72b55a3459a5105))
+
 ## [1.0.52](https://github.com/ocalvo/PwrDev/compare/v1.0.51...v1.0.52) (2026-04-22)
 
 
