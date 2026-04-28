@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.1.0](https://github.com/ocalvo/PwrDev/compare/v1.0.53...v1.1.0) (2026-04-28)
+
+
+### Features
+
+* **build:** add Invoke-GradleBuild and extract Invoke-MsBuild dispatcher ([cbd2ab2](https://github.com/ocalvo/PwrDev/commit/cbd2ab22d9496738565fa40b85b6c1ef411483ad))
+* **build:** add Invoke-GradleBuild and extract Invoke-MsBuild dispatcher ([dee51e3](https://github.com/ocalvo/PwrDev/commit/dee51e3f5156e16a2c317709703646c1c6246b79))
+* **build:** rich BuildDiagnostic objects from Get-BuildErrors, Gradle log capture ([1522d98](https://github.com/ocalvo/PwrDev/commit/1522d9808f095347eceba4d9f61a515bbb541624))
+
+
+### Bug Fixes
+
+* **build:** capture Gradle logs to .vs folder, use Get-RepoRoot.ps1 ([0df5b4f](https://github.com/ocalvo/PwrDev/commit/0df5b4f5af9facc0b4eac99e270a07b6c31d20a5))
+
 ## [1.0.53](https://github.com/ocalvo/PwrDev/compare/v1.0.52...v1.0.53) (2026-04-27)
 
 
