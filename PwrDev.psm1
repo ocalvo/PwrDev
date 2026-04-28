@@ -1,4 +1,6 @@
 
+Update-FormatData -PrependPath $PSScriptRoot\PwrDev.format.ps1xml
+
 set-alias Get-RepoRoot $PSScriptRoot\Get-RepoRoot.ps1 -scope global
 Export-ModuleMember -Alias Get-RepoRoot
 

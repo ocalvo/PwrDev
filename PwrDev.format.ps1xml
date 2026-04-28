@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Configuration>
+  <ViewDefinitions>
+    <View>
+      <Name>PwrDev.BuildDiagnostic.Table</Name>
+      <ViewSelectedBy>
+        <TypeName>PwrDev.BuildDiagnostic</TypeName>
+      </ViewSelectedBy>
+      <TableControl>
+        <AutoSize/>
+        <TableHeaders>
+          <TableColumnHeader><Label>Sev</Label><Width>7</Width></TableColumnHeader>
+          <TableColumnHeader><Label>File</Label><Width>40</Width></TableColumnHeader>
+          <TableColumnHeader><Label>Line</Label><Width>6</Width><Alignment>Right</Alignment></TableColumnHeader>
+          <TableColumnHeader><Label>Col</Label><Width>5</Width><Alignment>Right</Alignment></TableColumnHeader>
+          <TableColumnHeader><Label>Code</Label><Width>10</Width></TableColumnHeader>
+          <TableColumnHeader><Label>Message</Label></TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem><PropertyName>Severity</PropertyName></TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>
+                  if ($_.File -is [System.IO.FileSystemInfo]) { $_.File.Name } else { $_.File }
+                </ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem><PropertyName>LineNumber</PropertyName></TableColumnItem>
+              <TableColumnItem><PropertyName>Column</PropertyName></TableColumnItem>
+              <TableColumnItem><PropertyName>Code</PropertyName></TableColumnItem>
+              <TableColumnItem><PropertyName>Message</PropertyName></TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
+  </ViewDefinitions>
+</Configuration>
