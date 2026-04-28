@@ -35,12 +35,20 @@ Export-ModuleMember -Alias Enter-VsShell
 set-alias build $PSScriptRoot\Invoke-BuildTool.ps1 -scope global
 Export-ModuleMember -Alias build
 
+set-alias gradle-build $PSScriptRoot\Invoke-GradleBuild.ps1 -scope global
+Export-ModuleMember -Alias gradle-build
+
+set-alias gradle $PSScriptRoot\Invoke-GradleBuild.ps1 -scope global
+Export-ModuleMember -Alias gradle
+
+set-alias msbuild $PSScriptRoot\Invoke-MsBuild.ps1 -scope global
+Export-ModuleMember -Alias msbuild
+
 set-alias test-build $PSScriptRoot\Test-Build.ps1 -scope global
 Export-ModuleMember -Alias test-build
 
 $global:_pwrdev_aliases = (
   'devenv',
-  'msbuild',
   'deployapprecipe'
 )
 
