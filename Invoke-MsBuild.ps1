@@ -263,9 +263,9 @@ process {
     Write-Host "No build, nothing else todo"
   }
 
-  Write-Verbose "LogFile:$logFileBuildBL"
+  Write-Verbose "LogFile:${logFileBuildBL}"
   $script:start = [DateTime]::Now
-  msbuild $projectItem.FullName "-bl:LogFile=$LogFileBuildBL" "-flp:Logfile=$LogTxtFileName;Verbosity=$Verbosity" "-flp2:LogFile=$logErrFileName;errorsonly" "-flp3:LogFile=$logWrnFileName;warningsonly" "/v:$Verbosity" @msbuildArgs
+  msbuild.exe $projectItem.FullName "-bl:LogFile=${LogFileBuildBL}" "-flp:Logfile=${LogTxtFileName};Verbosity=${Verbosity}" "-flp2:LogFile=${logErrFileName};errorsonly" "-flp3:LogFile=${logWrnFileName};warningsonly" "/v:${Verbosity}" @msbuildArgs
   $script:errorLevel = $LASTEXITCODE
   $script:end = [DateTime]::Now
 }
