@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.1.1](https://github.com/ocalvo/PwrDev/compare/v1.1.0...v1.1.1) (2026-10-18)
+
+
+### Bug Fixes
+
+* **build:** import PwrDev instead of the retired PwrRazzle ([#21](https://github.com/ocalvo/PwrDev/issues/21)) ([b12ea9d](https://github.com/ocalvo/PwrDev/commit/b12ea9d3c7bc3fe6ec60654b1c9f0b6a2dfbc399))
+
 ## [1.1.0](https://github.com/ocalvo/PwrDev/compare/v1.0.53...v1.1.0) (2026-04-28)
 
 
